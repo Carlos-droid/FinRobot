@@ -5,11 +5,9 @@ from pandas import DataFrame
 from finnlp.data_sources.news.cnbc_streaming import CNBC_Streaming
 from finnlp.data_sources.news.yicai_streaming import Yicai_Streaming
 from finnlp.data_sources.news.investorplace_streaming import InvestorPlace_Streaming
-# from finnlp.data_sources.news.eastmoney_streaming import Eastmoney_Streaming
 
 from finnlp.data_sources.social_media.xueqiu_streaming import Xueqiu_Streaming
 from finnlp.data_sources.social_media.stocktwits_streaming import Stocktwits_Streaming
-# from finnlp.data_sources.social_media.reddit_streaming import Reddit_Streaming
 
 from finnlp.data_sources.news.sina_finance_date_range import Sina_Finance_Date_Range
 from finnlp.data_sources.news.finnhub_date_range import Finnhub_Date_Range
@@ -90,16 +88,6 @@ class FinNLPUtils:
         return streaming_download(InvestorPlace_Streaming, {}, "Investor Place News", keyword, rounds, selected_columns, save_path)
 
 
-    # def eastmoney_news_download(
-    #     stock: Annotated[str, "stock code, e.g. 600519"],
-    #     pages: Annotated[int, "Number of pages to retrieve. Default to 1"] = 1,
-    #     selected_columns: Annotated[list[str], "List of column names of news to return, should be chosen from 'title', 'time', 'author', 'summary'. Default to ['title', 'time', 'author', 'summary']"] = ['title', 'time', 'author', 'summary'],
-    #     verbose: Annotated[bool, "Whether to print downloaded news to console. Default to True"] = True,
-    #     save_path: Annotated[str, "If specified (recommended if the amount of news is large), the downloaded news will be saved to save_path, otherwise the news will be returned as a string. Default to None"] = None,
-    # ) -> str:
-    #     return streaming_download(Eastmoney_Streaming, "Eastmoney", stock, pages, selected_columns, save_path)
-
-
     """
     Date Range News Download
     """
@@ -174,61 +162,6 @@ class FinNLPUtils:
         return streaming_download(Stocktwits_Streaming, {}, "Stocktwits Social Media", stock, rounds, selected_columns, save_path)
 
 
-    # def reddit_social_media_download(
-    #     pages: Annotated[int, "Number of pages to retrieve. Default to 1"] = 1,
-    #     selected_columns: Annotated[list[str], """
-    #         List of column names of news to return, should be chosen from 'id', 
-    #         'body', 'created_at', 'user', 'source', 'symbols', 'prices',
-    #         'mentioned_users', 'entities', 'liked_by_self', 'reshared_by_self',
-    #         'conversation', 'links', 'likes', 'reshare_message', 'structurable',
-    #         'reshares'. Default to ['created_at', 'body']
-    #     """] = ['created_at', 'body'],
-    #     verbose: Annotated[bool, "Whether to print downloaded news to console. Default to True"] = True,
-    #     save_path: Annotated[str, "If specified (recommended if the amount of news is large), the downloaded news will be saved to save_path. Default to None"] = None,
-    # ) -> DataFrame:
-    #     return streaming_download(Reddit_Streaming, {}, "Reddit Social Media", None, pages, selected_columns, save_path)
-
-
-    """
-    Company Announcements
-    (Not working well)
-    """
-
-    # from finnlp.data_sources.company_announcement.sec import SEC_Announcement
-    # from finnlp.data_sources.company_announcement.juchao import Juchao_Announcement
-
-
-    # def sec_announcement_download(
-    #     start_date: Annotated[str, "Start date of the news to retrieve, YYYY-mm-dd"],
-    #     end_date: Annotated[str, "End date of the news to retrieve, YYYY-mm-dd"],
-    #     stock: Annotated[str, "Stock symbol, e.g. AAPL"],
-    #     selected_columns: Annotated[list[str], "List of column names of news to return, should be chosen from 'category', 'datetime', 'headline', 'id', 'image', 'related', 'source', 'summary', 'url', 'content'. Default to ['headline', 'datetime', 'source', 'summary']"] = ['headline', 'datetime', 'source', 'summary'],
-    #     verbose: Annotated[bool, "Whether to print downloaded news to console. Default to True"] = True,
-    #     save_path: Annotated[str, "If specified (recommended if the amount of news is large), the downloaded news will be saved to save_path. Default to None"] = None,
-    # ) -> DataFrame:
-    #     return date_range_download(SEC_Announcement, {}, "SEC Announcements", start_date, end_date, stock, selected_columns, save_path)
-
-
-    # def juchao_announcement_download(
-    #     start_date: Annotated[str, "Start date of the news to retrieve, YYYY-mm-dd"],
-    #     end_date: Annotated[str, "End date of the news to retrieve, YYYY-mm-dd"],
-    #     stock: Annotated[str, "Stock code, e.g. 000001"],
-    #     selected_columns: Annotated[list[str], "List of column names of news to return, should be chosen from 'category', 'datetime', 'headline', 'id', 'image', 'related', 'source', 'summary', 'url', 'content'. Default to ['headline', 'datetime', 'source', 'summary']"] = ['headline', 'datetime', 'source', 'summary'],
-    #     verbose: Annotated[bool, "Whether to print downloaded news to console. Default to True"] = True,
-    #     save_path: Annotated[str, "If specified (recommended if the amount of news is large), the downloaded news will be saved to save_path. Default to None"] = None,
-    # ) -> DataFrame:
-    #     return date_range_download(Juchao_Announcement, {}, "Juchao Announcements", start_date, end_date, stock, selected_columns, save_path)
-
-
 if __name__ == "__main__":
 
     print(FinNLPUtils.yicai_news_download("茅台", save_path="yicai_maotai.csv"))
-    # print(cnbc_news_download("tesla", save_path="cnbc_tesla.csv"))
-    # investor_place_news_download("tesla", save_path="invpl_tesla.csv")
-    # eastmoney_news_download("600519", save_path="estmny_maotai.csv")
-    # sina_finance_news_download("2024-03-02", "2024-03-02", save_path="sina_news.csv")
-    # finnhub_news_download("2024-03-02", "2024-03-02", "AAPL", save_path="finnhub_aapl_news.csv")
-    # stocktwits_social_media_download("AAPL", save_path="stocktwits_aapl.csv")
-    # xueqiu_social_media_download("茅台", save_path="xueqiu_maotai.csv")
-    # reddit_social_media_download(save_path="reddit_social_media.csv")
-    # juchao_announcement_download("000001", "2020-01-01", "2020-06-01", save_path="sec_announcement.csv")
