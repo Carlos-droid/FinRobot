@@ -41,6 +41,9 @@ DATE_FORMAT_TOKENS = "%Y-%m-%d"
 DEFAULT_BEFORE_DATE = date.today().strftime(DATE_FORMAT_TOKENS)
 DEFAULT_AFTER_DATE = date(2000, 1, 1).strftime(DATE_FORMAT_TOKENS)
 
+_YEAR_PATTERN_10K = re.compile(r"20\d{2}")
+_YEAR_PATTERN_10Q = re.compile(r"20\d{4}")
+
 
 class timeout:
     def __init__(self, seconds=1, error_message="Timeout"):
@@ -112,9 +115,9 @@ class SECExtractor:
         """
         details = filing_details.split("/")[-1]
         if self.filing_type == "10-K":
-            matches = re.findall("20\d{2}", details)
+            matches = _YEAR_PATTERN_10K.findall(details)
         elif self.filing_type == "10-Q":
-            matches = re.findall("20\d{4}", details)
+            matches = _YEAR_PATTERN_10Q.findall(details)
 
         if matches:
             return matches[-1]  # Return the first match
