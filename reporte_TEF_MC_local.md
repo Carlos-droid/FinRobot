@@ -1,3 +1,0 @@
-# Reporte FinRobot: TEF.MC (TEF.MC)
-
-El principal punto es que como asistente de inteligencia artificial, no tengo la capacidad de acceder a datos en tiempo real o ejecutar funciones para obtener la cotización actual de TEF.MC o sus datos históricos. Se recomienda consultar sitios web financieros confiables para obtener la información financiera más reciente y proporcionarla aquí para poder continuar con el análisis exhaustivo del informe.
