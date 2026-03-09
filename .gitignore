@@ -13,18 +13,18 @@ config_api_keys
 *.db
 *.sqlite
 *.sql
-/data/
-/db/
-/finrobot-backend/data/
+data/
+db/
+finrobot-backend/data/
 **/__pycache__/
 
 # Datos financieros y reportes locales
-/cartera/
+cartera/
 portfolio.*
 stocks.json
 reporte_*.md
 *.log
-venv/
+venv
 
 # Herramientas, IDE y Repos Embebidos
 .agents/
@@ -32,14 +32,11 @@ venv/
 .vscode/
 mcp-config.json
 tools/
-FinRobot/
-backends-for-openbb/
-OpenBB/
-openbb-ai/
-
-# Otros
-.ruff_cache/
-.cache/
-.ipynb_checkpoints/
-coding/
-tmp/
+FinRobot
+backends-for-openbb
+OpenBB
+openbb-ai
+OpenBB@
+openbb-ai@
+agents-for-openbb@
+venv@
