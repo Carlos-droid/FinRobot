@@ -1,0 +1,316 @@
+{
+    "finrobot_cartera": {
+        "name": "Cartera de Inversión",
+        "description": "Tabla interactiva de la cartera con calificaciones de FinRobot",
+        "category": "FinRobot",
+        "type": "table",
+        "endpoint": "/api/cartera/summary",
+        "gridData": {
+            "w": 40,
+            "h": 18
+        },
+        "staleTime": 300000,
+        "mcp": {
+            "description": "Proporciona la lista de activos en cartera, incluyendo símbolo, nombre, cantidad y la calificación de FinRobot (finrobot_rating).",
+            "runToolLabel": "Obtener Cartera"
+        },
+        "data": {
+            "dataKey": "data",
+            "table": {
+                "columnsDefs": [
+                    {
+                        "field": "symbol",
+                        "headerName": "Ticker",
+                        "cellDataType": "text",
+                        "formatterFn": "none",
+                        "width": 90,
+                        "pinned": "left",
+                        "renderFn": "cellOnClick",
+                        "renderFnParams": {
+                            "actionType": "groupBy",
+                            "groupBy": {
+                                "paramName": "finrobot_symbol"
+                            }
+                        }
+                    },
+                    {
+                        "field": "name",
+                        "headerName": "Empresa",
+                        "cellDataType": "text",
+                        "formatterFn": "none",
+                        "width": 260
+                    },
+                    {
+                        "field": "shares",
+                        "headerName": "Acciones",
+                        "cellDataType": "number",
+                        "formatterFn": "int",
+                        "width": 100
+                    },
+                    {
+                        "field": "finrobot_rating",
+                        "headerName": "FinRobot Rating",
+                        "cellDataType": "text",
+                        "formatterFn": "none",
+                        "width": 150,
+                        "renderFn": "columnColor",
+                        "renderFnParams": {
+                            "colorRules": [
+                                {
+                                    "condition": "contains",
+                                    "value": "BUY",
+                                    "color": "green",
+                                    "fill": true
+                                },
+                                {
+                                    "condition": "contains",
+                                    "value": "STRONG",
+                                    "color": "green",
+                                    "fill": true
+                                },
+                                {
+                                    "condition": "contains",
+                                    "value": "HOLD",
+                                    "color": "#F59E0B",
+                                    "fill": true
+                                },
+                                {
+                                    "condition": "contains",
+                                    "value": "SELL",
+                                    "color": "red",
+                                    "fill": true
+                                },
+                                {
+                                    "condition": "contains",
+                                    "value": "CHECKING",
+                                    "color": "#6B7280",
+                                    "fill": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "field": "last_analysis_date",
+                        "headerName": "Último Análisis",
+                        "cellDataType": "text",
+                        "formatterFn": "none",
+                        "width": 130
+                    }
+                ]
+            }
+        }
+    },
+    "finrobot_radar": {
+        "name": "Radar de Acciones",
+        "description": "Lista de seguimiento analizadas por FinRobot",
+        "category": "FinRobot",
+        "type": "table",
+        "endpoint": "/api/radar/summary",
+        "gridWidth": 40,
+        "gridHeight": 20,
+        "staleTime": 300000,
+        "cell_click_grouping": {
+            "finrobot_symbol": "symbol"
+        },
+        "renderFunctions": {
+            "profit_loss": "column_color",
+            "profit_loss_pct": "column_color"
+        },
+        "data": {
+            "dataKey": "data"
+        }
+    },
+    "finrobot_analysis": {
+        "name": "Reporte FinRobot",
+        "description": "Análisis exhaustivo generado por los Agentes de Autogen",
+        "category": "FinRobot",
+        "type": "markdown",
+        "endpoint": "/api/ticker/analysis",
+        "gridWidth": 40,
+        "gridHeight": 35,
+        "params": [
+            {
+                "paramName": "finrobot_symbol",
+                "label": "Símbolo",
+                "type": "text",
+                "description": "Ticker de la empresa (ej. LOG.MC)",
+                "value": "LOG.MC"
+            },
+            {
+                "paramName": "model_type",
+                "label": "Modelo LLM",
+                "type": "text",
+                "description": "Selecciona el cerebro para el análisis",
+                "options": [
+                    {
+                        "label": "Local (7B)",
+                        "value": "local"
+                    },
+                    {
+                        "label": "NVIDIA NIM (LLama-3.3-70B)",
+                        "value": "nim"
+                    }
+                ],
+                "value": "local"
+            }
+        ]
+    },
+    "finrobot_chart": {
+        "name": "Evolución Precio (FinRobot)",
+        "description": "Gráfico histórico interactivo",
+        "category": "FinRobot",
+        "type": "chart",
+        "endpoint": "/api/ticker/chart",
+        "chartType": "plotly-charts",
+        "gridWidth": 40,
+        "gridHeight": 25,
+        "params": [
+            {
+                "paramName": "finrobot_symbol",
+                "label": "Símbolo",
+                "type": "text",
+                "description": "Ticker de la empresa",
+                "value": "LOG.MC"
+            }
+        ]
+    },
+    "finrobot_run": {
+        "name": "Lanzar Nuevo Análisis",
+        "description": "Ejecuta los agentes de FinRobot sobre un nuevo Ticker. Introduce el símbolo y pulsa Run.",
+        "category": "FinRobot",
+        "type": "omni",
+        "endpoint": "/api/analyzer/run",
+        "runButton": true,
+        "gridData": {
+            "w": 30,
+            "h": 15
+        },
+        "params": [
+            {
+                "paramName": "prompt",
+                "label": "Prompt",
+                "type": "text",
+                "description": "Prompt interno para el agente (no editar)",
+                "value": "",
+                "show": false
+            },
+            {
+                "paramName": "ticker_to_run",
+                "label": "Símbolo a Analizar",
+                "type": "text",
+                "description": "Introduce el ticker (ej. ITX.MC, SAN.MC, TEF.MC)",
+                "value": ""
+            },
+            {
+                "paramName": "model_type",
+                "label": "Modelo a Usar",
+                "type": "text",
+                "description": "Motor de IA para el análisis",
+                "options": [
+                    {
+                        "label": "Local (Qwen 3.5 9B)",
+                        "value": "local"
+                    },
+                    {
+                        "label": "NVIDIA NIM",
+                        "value": "nim"
+                    }
+                ],
+                "value": "local"
+            }
+        ]
+    },
+    "finrobot_watchlist": {
+        "name": "Watchlist de Acciones",
+        "description": "Lista de seguimiento con datos de mercado en tiempo real: precio, variación diaria, volumen, capitalización, PER y rango anual.",
+        "category": "FinRobot",
+        "type": "table",
+        "endpoint": "/api/watchlist",
+        "gridData": {
+            "w": 40,
+            "h": 18
+        },
+        "staleTime": 60000,
+        "refetchInterval": 60000,
+        "params": [
+            {
+                "paramName": "tickers",
+                "label": "Tickers (separados por coma)",
+                "type": "text",
+                "description": "Lista de tickers separados por coma. Dejar vacío para usar la lista por defecto de la cartera.",
+                "value": ""
+            }
+        ],
+        "data": {
+            "table": {
+                "columnsDefs": [
+                    {
+                        "field": "symbol",
+                        "headerName": "Ticker",
+                        "cellDataType": "text",
+                        "formatterFn": "none",
+                        "width": 90,
+                        "pinned": "left"
+                    },
+                    {
+                        "field": "name",
+                        "headerName": "Empresa",
+                        "cellDataType": "text",
+                        "formatterFn": "none",
+                        "width": 220
+                    },
+                    {
+                        "field": "price",
+                        "headerName": "Precio (€)",
+                        "cellDataType": "number",
+                        "formatterFn": "none",
+                        "width": 110
+                    },
+                    {
+                        "field": "change_1d_pct",
+                        "headerName": "Var. Día (%)",
+                        "cellDataType": "number",
+                        "formatterFn": "percent",
+                        "renderFn": "greenRed",
+                        "width": 120
+                    },
+                    {
+                        "field": "volume",
+                        "headerName": "Volumen",
+                        "cellDataType": "number",
+                        "formatterFn": "int",
+                        "width": 130
+                    },
+                    {
+                        "field": "market_cap",
+                        "headerName": "Cap. Mercado",
+                        "cellDataType": "number",
+                        "formatterFn": "int",
+                        "width": 150
+                    },
+                    {
+                        "field": "pe_ratio",
+                        "headerName": "PER",
+                        "cellDataType": "number",
+                        "formatterFn": "none",
+                        "width": 90
+                    },
+                    {
+                        "field": "52w_high",
+                        "headerName": "Máx 52 sem.",
+                        "cellDataType": "number",
+                        "formatterFn": "none",
+                        "width": 120
+                    },
+                    {
+                        "field": "52w_low",
+                        "headerName": "Mín 52 sem.",
+                        "cellDataType": "number",
+                        "formatterFn": "none",
+                        "width": 120
+                    }
+                ]
+            }
+        }
+    }
+}

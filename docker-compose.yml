@@ -1,0 +1,34 @@
+# FinRobot — Docker Compose
+# Uso:
+#   docker compose build
+#   docker compose run --rm finrobot python -c "from finrobot import get_ollama_config; print(get_ollama_config())"
+#   docker compose run --rm finrobot python agent_builder_demo.py
+
+services:
+  finrobot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finrobot
+    env_file: .env
+    environment:
+      # Cuando corre en Docker, Ollama del host está en host.docker.internal
+      - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
+    volumes:
+      # Montar directorio de salida para persistir resultados
+      - ./output:/app/output
+      - ./coding:/app/coding
+    # Acceso a GPU NVIDIA (requiere nvidia-container-toolkit)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # Alternativa si host.docker.internal no funciona: usar red del host
+    # network_mode: host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    stdin_open: true
+    tty: true

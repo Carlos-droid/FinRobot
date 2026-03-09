@@ -1,0 +1,12 @@
+[
+    {
+        "model": "qwen2.5-coder:7b",
+        "base_url": "http://localhost:11434/v1",
+        "api_key": "ollama"
+    },
+    {
+        "model": "meta/llama-3.3-70b-instruct",
+        "base_url": "https://integrate.api.nvidia.com/v1",
+        "api_key": "nvapi-TU_API_KEY_AQUI"
+    }
+]

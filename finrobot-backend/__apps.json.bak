@@ -1,0 +1,84 @@
+{
+    "name": "FinRobot Central",
+    "img": "",
+    "img_dark": "",
+    "img_light": "",
+    "description": "Plataforma completa de análisis de carteras y radar impulsada por Agentes IA",
+    "allowCustomization": true,
+    "tabs": {
+        "main": {
+            "id": "main",
+            "name": "Main Dashboard",
+            "layout": [
+                {
+                    "i": "finrobot_cartera",
+                    "x": 0,
+                    "y": 0,
+                    "w": 20,
+                    "h": 15,
+                    "state": {},
+                    "groups": [
+                        "Group 1"
+                    ]
+                },
+                {
+                    "i": "finrobot_chart",
+                    "x": 20,
+                    "y": 0,
+                    "w": 20,
+                    "h": 15,
+                    "state": {
+                        "params": {
+                            "finrobot_symbol": "LOG.MC"
+                        }
+                    },
+                    "groups": [
+                        "Group 1"
+                    ]
+                },
+                {
+                    "i": "finrobot_run",
+                    "x": 0,
+                    "y": 15,
+                    "w": 20,
+                    "h": 15,
+                    "state": {},
+                    "groups": []
+                },
+                {
+                    "i": "finrobot_radar",
+                    "x": 20,
+                    "y": 15,
+                    "w": 20,
+                    "h": 15,
+                    "state": {},
+                    "groups": [
+                        "Group 1"
+                    ]
+                },
+                {
+                    "i": "finrobot_analysis",
+                    "x": 0,
+                    "y": 30,
+                    "w": 40,
+                    "h": 30,
+                    "state": {
+                        "params": {
+                            "finrobot_symbol": "LOG.MC"
+                        }
+                    },
+                    "groups": [
+                        "Group 1"
+                    ]
+                }
+            ]
+        }
+    },
+    "groups": [
+        {
+            "name": "Group 1",
+            "type": "ticker",
+            "defaultValue": "LOG.MC"
+        }
+    ]
+}

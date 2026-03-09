@@ -1,0 +1,32 @@
+# Seguridad y Privacidad
+.env
+.env.local
+.env.*
+config.json
+secrets.json
+OAI_CONFIG_LIST
+
+# Bases de datos
+*.db
+*.sqlite
+*.sql
+/data/
+/db/
+**/__pycache__/
+
+# Datos financieros y reportes locales
+/cartera/
+portfolio.*
+stocks.json
+reporte_*.md
+*.log
+venv/
+
+# Herramientas y IDE
+.agents/
+.cursor/
+.vscode/
+mcp-config.json
+tools/FinRobot/
+backends-for-openbb/
+OpenBB/
