@@ -1,0 +1,20 @@
+{
+    "mcpServers": {
+        "jcodemunch": {
+            "command": "uv",
+            "args": [
+                "run",
+                "--project",
+                "/home/ia/antigravity/tools/jcodemunch-mcp",
+                "jcodemunch-mcp"
+            ]
+        },
+        "engram": {
+            "command": "/home/ia/antigravity/tools/engram/cmd/engram/engram",
+            "args": [
+                "mcp",
+                "--tools=agent"
+            ]
+        }
+    }
+}
