@@ -141,20 +141,7 @@ FinRobot
 
 ## Installation:
 
-**1. (Recommended) Create a new virtual environment using uv**
-To maintain a clean and reproducible environment, we strongly recommend using `uv` to manage virtual environments.
-
-```shell
-uv venv .venv
-source .venv/bin/activate
-uv pip install -r requirements.txt
-uv pip install -e .
-```
-
-If you plan to use FinRobot inside Docker or OpenBB Workspace, refer to `finrobot-backend/README.md`.
-
-**Alternative Installation:**
-**1. Create a new virtual environment with conda**
+**1. (Recommended) Create a new virtual environment**
 ```shell
 conda create --name finrobot python=3.10
 conda activate finrobot

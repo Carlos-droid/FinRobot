@@ -44,8 +44,9 @@ class ReportAnalysisUtils:
             and net profit margins to evaluate cost efficiency, operational effectiveness, and overall profitability. 
             Analyze Earnings Per Share to understand investor perspectives. Compare these metrics with historical 
             data and industry or competitor benchmarks to identify growth patterns, profitability trends, and 
-            operational challenges. The output should be a structured Markdown format summarizing the previous analysis 
-            into 4-5 key points under respective subheadings with bullet points, specific discussion, and strong data support.
+            operational challenges. The output should be a strategic overview of the company’s financial health 
+            in a single paragraph, less than 130 words, summarizing the previous analysis into 4-5 key points under 
+            respective subheadings with specific discussion and strong data support.
             """
         )
 
@@ -77,8 +78,8 @@ class ReportAnalysisUtils:
             operational efficiency. Focus on evaluating the liquidity through current assets versus current liabilities, 
             the solvency via long-term debt ratios, and the equity position to gauge long-term investment potential. 
             Contrast these metrics with previous years' data to highlight financial trends, improvements, or deteriorations. 
-            Finalize with a structured Markdown assessment of the company's financial leverage, asset management, and capital structure, 
-            providing insights into its fiscal health and future prospects using clear headings and bullet points.
+            Finalize with a strategic assessment of the company's financial leverage, asset management, and capital structure, 
+            providing insights into its fiscal health and future prospects in a single paragraph. Less than 130 words.
             """
         )
 
@@ -105,9 +106,9 @@ class ReportAnalysisUtils:
             and outflows across operating, investing, and financing activities. Examine the operational cash flow to assess the 
             core business profitability, scrutinize investing activities for insights into capital expenditures and investments, 
             and review financing activities to understand debt, equity movements, and dividend policies. Compare these cash movements 
-            to prior periods to discern trends, sustainability, and liquidity risks. Conclude with a structured Markdown 
-            analysis of the company's cash management effectiveness, liquidity position, and potential for future 
-            growth or financial challenges, using clear headings and bullet points.
+            to prior periods to discern trends, sustainability, and liquidity risks. Conclude with an informed analysis of the company's 
+            cash management effectiveness, liquidity position, and potential for future growth or financial challenges in a single paragraph. 
+            Less than 130 words.
             """
         )
 
@@ -139,8 +140,8 @@ class ReportAnalysisUtils:
             and its changes. Analyze market dynamics and profit challenges, noting any effects from national policy changes. Include the cost side, 
             detailing operational costs, innovation investments, and expenses from channel expansion, etc. Support each statement with evidence, 
             keeping each segment analysis concise and under 60 words, accurately sourcing information. For each segment, consolidate the most 
-            significant findings into clear, concise points, excluding less critical or vaguely described aspects to ensure clarity and 
-            reliance on evidence-backed information. For each segment, the output should be structured using Markdown headings and bullet points.
+            significant findings into one clear, concise paragraph, excluding less critical or vaguely described aspects to ensure clarity and 
+            reliance on evidence-backed information. For each segment, the output should be one single paragraph within 150 words.
             """
         )
         section_text = SECUtils.get_10k_section(ticker_symbol, fyear, 7)
@@ -172,7 +173,8 @@ class ReportAnalysisUtils:
             profit changes, revenue contributions and market dynamics. For information not covered in the first two areas, identify and 
             integrate key findings related to operation, potential risks and strategic opportunities for growth and stability into the analysis. 
             For each part, integrate historical data comparisons and provide relevant facts, metrics or data as evidence. The entire synthesis 
-            should be presented in a structured Markdown format. Use logical headings, bullet points, and bold text to highlight key metrics and insights.
+            should be presented as a continuous paragraph without the use of bullet points. Use subtitles and numbering for each key point. 
+            The total output should be less than 160 words.
             """
         )
 
@@ -209,8 +211,7 @@ class ReportAnalysisUtils:
             3. Risk Quantification: Enumerate the key risk factors with supporting data if the company or segment is deemed risky.
             4. Downside Protections: If the company or segment is less risky, discuss the downside protections in place. Consider factors such as diversification, long-term contracts, and government regulation.
 
-            Finally, provide a detailed and nuanced assessment that reflects the true risk landscape of the company. 
-            Use structured Markdown formatting, including logical headers, bullet points, and bold text to highlight key risks.
+            Finally, provide a detailed and nuanced assessment that reflects the true risk landscape of the company. And Avoid any bullet points in your response.
             """
         )
         prompt = combine_prompt(instruction, section_text, "")
@@ -255,7 +256,7 @@ class ReportAnalysisUtils:
           ROIC: Discuss the return on invested capital and what it suggests about the company's efficiency in generating returns from its investments, especially focusing on recent trends.
           Revenue and Revenue Growth: Provide a comprehensive view of {company}’s revenue performance and growth trajectory, noting any significant changes or patterns.
           Conclusion: Summarize the overall financial health of {company} based on these metrics. Discuss how {company}’s performance over these years and across these metrics might justify or contradict its current market valuation (as reflected in the EV/EBITDA ratio).
-          Use structured Markdown formatting with headers and bullet points. Highlight key metrics in bold.
+          Avoid using any bullet points.
           """
         )
 
@@ -290,7 +291,7 @@ class ReportAnalysisUtils:
         instruction = dedent(
             """
             According to the given information, describe the performance highlights for each company's business line.
-            Use a structured Markdown format with bullet points for each business description.
+            Each business description should contain one sentence of a summarization and one sentence of explanation.
             """
         )
         prompt = combine_prompt(instruction, section_text, "")

@@ -1,0 +1,3 @@
+# Reporte FinRobot: SAN.MC (SAN.MC)
+
+El informe de auditoría financiera de SAN.MC del 24 de mayo de 2024 confirma un perfil sólido y rentable que supera a la media del sector. Destaca por alta solvencia (CET1 ~16.8%), ROE elevado (~19%) y márgenes de interés robustos (~11.5%). La calidad de activos es excelente con NPL bajo (~2.8%) y eficiencia operativa del ~65%. El dividendo se considera sostenible gracias a los flujos de caja fuertes y el respaldo del Grupo Santander, recomendando mantener la posición con monitoreo trimestral de riesgos crediticios y tipos de interés.

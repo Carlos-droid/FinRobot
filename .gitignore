@@ -1,32 +1,17 @@
-# Seguridad y Privacidad
-.env
-.env.local
-.env.*
-config.json
-secrets.json
 OAI_CONFIG_LIST
-
-# Bases de datos
-*.db
-*.sqlite
-*.sql
-/data/
-/db/
-**/__pycache__/
-
-# Datos financieros y reportes locales
-/cartera/
-portfolio.*
-stocks.json
-reporte_*.md
-*.log
-venv/
-
-# Herramientas y IDE
-.agents/
-.cursor/
-.vscode/
-mcp-config.json
-tools/FinRobot/
-backends-for-openbb/
-OpenBB/
+PERSONAL_KEYS
+config_api_keys
+__pycache__/
+.ipynb_checkpoints/
+.cache/
+*.csv
+*.jpg
+*.png
+quant/
+coding/
+*.egg-info/
+.DS_Store
+projects/
+dist/
+tmp/
+filings/

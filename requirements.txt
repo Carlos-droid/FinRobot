@@ -1,8 +1,6 @@
 pyautogen>=0.2.19
 ipython
 huggingface_hub
-python-dotenv>=1.0.0
-openai>=1.0.0
 matplotlib
 
 # financial libraries
@@ -10,7 +8,7 @@ finnhub-python
 yfinance
 mplfinance
 backtrader
-edgartools
+sec_api
 
 # data handling
 numpy
@@ -28,17 +26,18 @@ praw
 tushare
 pandas_datareader
 
-pdfkit>=1.0.0
+pdfkit==1.0.0
 marker-pdf
-aiohttp>=3.9.0
-langchain>=0.1.20
-nltk>=3.8.1
-ratelimit>=2.2.1
-Requests>=2.31.0
-scikit_learn>=1.5.0
-starlette>=0.37.2
-tenacity>=8.3.0
-tqdm>=4.66.1
-typing_extensions>=4.9.0
-unstructured>=0.10.0
-wrapt>=1.14.0
+pandas==2.0.3
+aiohttp==3.8.5
+langchain==0.1.20
+nltk==3.8.1
+numpy==1.26.4
+ratelimit==2.2.1
+Requests==2.31.0
+scikit_learn==1.5.0
+starlette==0.37.2
+tenacity==8.3.0
+tqdm==4.66.1
+typing_extensions==4.9.0
+unstructured==0.8.1

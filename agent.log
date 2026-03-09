@@ -1,0 +1,272 @@
+INFO:     Started server process [86731]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:__main__:Incoming request: POST http://127.0.0.1:8001/v1/query
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:56374 - "POST /v1/query HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:45154 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:45154 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:45154 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:45154 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:45154 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:47142 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:47142 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:47142 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:47142 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:47142 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:58308 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:58308 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:58308 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:58308 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:34440 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:34456 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:34456 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:34456 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:34456 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:46526 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:46536 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:46536 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:46536 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:46536 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:59074 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:59074 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:59074 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:59074 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:59074 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:57654 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:57664 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:57654 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:57654 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:57654 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:47370 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:47370 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:47370 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:47370 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:38302 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:38318 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:38318 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:38318 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:38318 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:38302 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:38302 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:38318 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:38318 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:40974 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:40974 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:40974 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:40974 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:40974 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:46960 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:46966 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:46960 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:46960 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:46960 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:46960 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:46960 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:46960 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:46960 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:43104 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:43104 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:43104 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:43104 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:34706 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:34706 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:34706 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:34706 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:45406 - "GET /agents.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/widgets.json
+INFO:__main__:OpenBB Workspace is requesting widgets.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:45406 - "GET /widgets.json HTTP/1.1" 200 OK
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/apps.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:45406 - "GET /apps.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/templates.json
+INFO:__main__:Response status: 404
+INFO:     127.0.0.1:45406 - "GET /templates.json HTTP/1.1" 404 Not Found
+INFO:__main__:Incoming request: GET http://127.0.0.1:8001/agents.json
+INFO:__main__:OpenBB Workspace is requesting agents.json
+INFO:__main__:Response status: 200
+INFO:     127.0.0.1:45406 - "GET /agents.json HTTP/1.1" 200 OK

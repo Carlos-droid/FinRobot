@@ -3,17 +3,7 @@ import json
 import pandas as pd
 from datetime import date, timedelta, datetime
 from typing import Annotated
-from dotenv import load_dotenv
 
-# Cargar variables desde .env al importar el módulo
-load_dotenv()
-
-
-import logging
-
-# Configure basic logger
-logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 # Define custom annotated types
 # VerboseType = Annotated[bool, "Whether to print data to console. Default to True."]
@@ -31,7 +21,7 @@ SavePathType = Annotated[str, "File path to save data. If None, data is not save
 def save_output(data: pd.DataFrame, tag: str, save_path: SavePathType = None) -> None:
     if save_path:
         data.to_csv(save_path)
-        logger.info(f"{tag} saved to {save_path}")
+        print(f"{tag} saved to {save_path}")
 
 
 def get_current_date():

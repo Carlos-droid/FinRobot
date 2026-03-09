@@ -156,37 +156,27 @@ class FMPUtils:
         # Create DataFrame
         df = pd.DataFrame()
 
+        # Construct URL for income statement and ratios for each year
+        income_statement_url = f"{base_url}/income-statement/{ticker_symbol}?limit={years}&apikey={fmp_api_key}"
+        ratios_url = (
+            f"{base_url}/ratios/{ticker_symbol}?limit={years}&apikey={fmp_api_key}"
+        )
+        key_metrics_url = f"{base_url}/key-metrics/{ticker_symbol}?limit={years}&apikey={fmp_api_key}"
+
+        # Requesting data from the API
+        income_data = requests.get(income_statement_url).json()
+        key_metrics_data = requests.get(key_metrics_url).json()
+        ratios_data = requests.get(ratios_url).json()
+
         # Iterate over the last 'years' years of data
         for year_offset in range(years):
-            # Construct URL for income statement and ratios for each year
-            income_statement_url = f"{base_url}/income-statement/{ticker_symbol}?limit={years}&apikey={fmp_api_key}"
-            ratios_url = (
-                f"{base_url}/ratios/{ticker_symbol}?limit={years}&apikey={fmp_api_key}"
-            )
-            key_metrics_url = f"{base_url}/key-metrics/{ticker_symbol}?limit={years}&apikey={fmp_api_key}"
-
-            # Requesting data from the API
-            try:
-                income_data = requests.get(income_statement_url).json()
-                key_metrics_data = requests.get(key_metrics_url).json()
-                ratios_data = requests.get(ratios_url).json()
-            except requests.RequestException as e:
-                print(f"Error fetching data for {ticker_symbol}: {e}")
-                continue
-
             # Extracting needed metrics for each year
             if income_data and key_metrics_data and ratios_data:
-                if len(income_data) <= year_offset or len(key_metrics_data) <= year_offset or len(ratios_data) <= year_offset:
-                    continue
-                prev_revenue = income_data[year_offset - 1]["revenue"] if year_offset > 0 and len(income_data) > year_offset else income_data[year_offset]["revenue"]
-                revenue_growth = round(((income_data[year_offset]["revenue"] - prev_revenue) / prev_revenue)*100, 1) if prev_revenue != 0 else 0
-                gross_margin = round((income_data[year_offset]["grossProfit"] / income_data[year_offset]["revenue"]), 2) if income_data[year_offset]["revenue"] != 0 else 0
-                
                 metrics = {
                     "Revenue": round(income_data[year_offset]["revenue"] / 1e6),
-                    "Revenue Growth": f"{revenue_growth}%",
+                    "Revenue Growth": "{}%".format(round(((income_data[year_offset]["revenue"] - income_data[year_offset - 1]["revenue"]) / income_data[year_offset - 1]["revenue"])*100,1)),
                     "Gross Revenue": round(income_data[year_offset]["grossProfit"] / 1e6),
-                    "Gross Margin": gross_margin,
+                    "Gross Margin": round((income_data[year_offset]["grossProfit"] / income_data[year_offset]["revenue"]),2),
                     "EBITDA": round(income_data[year_offset]["ebitda"] / 1e6),
                     "EBITDA Margin": round((income_data[year_offset]["ebitdaratio"]),2),
                     "FCF": round(key_metrics_data[year_offset]["enterpriseValue"] / key_metrics_data[year_offset]["evToOperatingCashFlow"] / 1e6),
@@ -223,29 +213,25 @@ class FMPUtils:
             ratios_url = f"{base_url}/ratios/{symbol}?limit={years}&apikey={fmp_api_key}"
             key_metrics_url = f"{base_url}/key-metrics/{symbol}?limit={years}&apikey={fmp_api_key}"
 
-            try:
-                income_data = requests.get(income_statement_url).json()
-                ratios_data = requests.get(ratios_url).json()
-                key_metrics_data = requests.get(key_metrics_url).json()
-            except requests.RequestException as e:
-                print(f"Error fetching competitor data for {symbol}: {e}")
-                continue
+            # ⚡ Bolt Optimization: Fetch data once per symbol instead of fetching for each year.
+            # (In this function it's already properly hoisted out of the years loop, but let's
+            # ensure no similar issue in this block. Looks like it's already correct here.)
+            income_data = requests.get(income_statement_url).json()
+            ratios_data = requests.get(ratios_url).json()
+            key_metrics_data = requests.get(key_metrics_url).json()
 
             metrics = {}
 
             if income_data and ratios_data and key_metrics_data:
                 for year_offset in range(years):
-                    if len(income_data) <= year_offset or len(key_metrics_data) <= year_offset or len(ratios_data) <= year_offset:
-                        continue
-                    prev_revenue = income_data[year_offset - 1]["revenue"] if year_offset > 0 and len(income_data) > year_offset else 1
-                    revenue_growth = round(((income_data[year_offset]["revenue"] - prev_revenue) / prev_revenue)*100, 1) if prev_revenue != 0 else 0
-                    gross_margin = round((income_data[year_offset]["grossProfit"] / income_data[year_offset]["revenue"]), 2) if income_data[year_offset]["revenue"] != 0 else 0
-                    
                     metrics[year_offset] = {
                         "Revenue": round(income_data[year_offset]["revenue"] / 1e6),
-                        "Revenue Growth": f"{revenue_growth}%" if year_offset > 0 else None,
-                        "Gross Margin": gross_margin,
-                        "EBITDA Margin": round((income_data[year_offset]["ebitdaratio"]), 2),
+                        "Revenue Growth": (
+                            "{}%".format((round(income_data[year_offset]["revenue"] - income_data[year_offset - 1]["revenue"] / income_data[year_offset - 1]["revenue"])*100,1))
+                            if year_offset > 0 else None
+                        ),
+                        "Gross Margin": round((income_data[year_offset]["grossProfit"] / income_data[year_offset]["revenue"]),2),
+                        "EBITDA Margin": round((income_data[year_offset]["ebitdaratio"]),2),
                         "FCF Conversion": round((
                             key_metrics_data[year_offset]["enterpriseValue"] 
                             / key_metrics_data[year_offset]["evToOperatingCashFlow"] 
@@ -264,3 +250,8 @@ class FMPUtils:
 
 
 
+if __name__ == "__main__":
+    from finrobot.utils import register_keys_from_json
+
+    register_keys_from_json("config_api_keys")
+    FMPUtils.get_sec_report("NEE", "2024")

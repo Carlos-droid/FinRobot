@@ -15,7 +15,7 @@ from functools import partial
 from abc import ABC, abstractmethod
 from ..toolkits import register_toolkits
 from ..functional.rag import get_rag_function
-from .utils import instruction_message, instruction_trigger, order_message, order_trigger
+from .utils import *
 from .prompts import leader_system_message, role_system_message
 
 
