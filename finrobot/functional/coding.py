@@ -35,20 +35,36 @@ class IPythonUtils:
             return log
 
 
+def _get_safe_path(base_path: str, filename: str) -> str:
+    """
+    Constructs a safe absolute path and ensures it does not escape the base_path directory.
+    """
+    base_abs = os.path.abspath(base_path)
+    # Join base and filename, then resolve to absolute path
+    target_abs = os.path.abspath(os.path.join(base_path, filename))
+    # Ensure target starts with the base directory
+    # Adding os.sep ensures that e.g. base_path="coding" doesn't allow "coding2/file"
+    if not target_abs.startswith(base_abs + os.sep) and target_abs != base_abs:
+        raise ValueError("Invalid path: Path traversal detected.")
+    return target_abs
+
+
 class CodingUtils:  # Borrowed from https://microsoft.github.io/autogen/docs/notebooks/agentchat_function_call_code_writing
 
     def list_dir(directory: Annotated[str, "Directory to check."]) -> str:
         """
         List files in choosen directory.
         """
-        files = os.listdir(default_path + directory)
+        safe_dir = _get_safe_path(default_path, directory)
+        files = os.listdir(safe_dir)
         return str(files)
 
     def see_file(filename: Annotated[str, "Name and path of file to check."]) -> str:
         """
         Check the contents of a chosen file.
         """
-        with open(default_path + filename, "r") as file:
+        safe_file_path = _get_safe_path(default_path, filename)
+        with open(safe_file_path, "r") as file:
             lines = file.readlines()
         formatted_lines = [f"{i+1}:{line}" for i, line in enumerate(lines)]
         file_contents = "".join(formatted_lines)
@@ -67,7 +83,8 @@ class CodingUtils:  # Borrowed from https://microsoft.github.io/autogen/docs/not
         """
         Replace old piece of code with new one. Proper indentation is important.
         """
-        with open(default_path + filename, "r+") as file:
+        safe_file_path = _get_safe_path(default_path, filename)
+        with open(safe_file_path, "r+") as file:
             file_contents = file.readlines()
             file_contents[start_line - 1 : end_line] = [new_code + "\n"]
             file.seek(0)
@@ -82,8 +99,9 @@ class CodingUtils:  # Borrowed from https://microsoft.github.io/autogen/docs/not
         """
         Create a new file with provided code.
         """
-        directory = os.path.dirname(default_path + filename)
+        safe_file_path = _get_safe_path(default_path, filename)
+        directory = os.path.dirname(safe_file_path)
         os.makedirs(directory, exist_ok=True)
-        with open(default_path + filename, "w") as file:
+        with open(safe_file_path, "w") as file:
             file.write(code)
         return "File created successfully"
