@@ -3,7 +3,7 @@ import finnhub
 import pandas as pd
 import json
 import random
-from typing import Annotated
+from typing import Annotated, Any
 from collections import defaultdict
 from functools import wraps
 from datetime import datetime
@@ -55,19 +55,22 @@ class FinnHubUtils:
         symbol: Annotated[str, "ticker symbol"],
         start_date: Annotated[
             str,
-            "start date of the search period for the company's basic financials, yyyy-mm-dd",
-        ],
+            "MANDATORY. start date in yyyy-mm-dd. DO NOT use 'from'.",
+        ] = None,
         end_date: Annotated[
             str,
-            "end date of the search period for the company's basic financials, yyyy-mm-dd",
-        ],
+            "MANDATORY. end date in yyyy-mm-dd. DO NOT use 'to'.",
+        ] = None,
         max_news_num: Annotated[
             int, "maximum number of news to return, default to 10"
         ] = 10,
         save_path: SavePathType = None,
     ) -> pd.DataFrame:
         """
-        retrieve market news related to designated company
+        Retrieve market news related to designated company.
+        IMPORTANT FOR LLMs: 
+        - You MUST use EXACTLY 'start_date' and 'end_date' parameter names.
+        - DO NOT use 'from' or 'to'.
         """
         news = finnhub_client.company_news(symbol, _from=start_date, to=end_date)
         if len(news) == 0:
@@ -97,12 +100,12 @@ class FinnHubUtils:
         ],
         start_date: Annotated[
             str,
-            "start date of the search period for the company's basic financials, yyyy-mm-dd",
-        ],
+            "MANDATORY. start date in yyyy-mm-dd. DO NOT use 'from'.",
+        ] = None,
         end_date: Annotated[
             str,
-            "end date of the search period for the company's basic financials, yyyy-mm-dd",
-        ],
+            "MANDATORY. end date in yyyy-mm-dd. DO NOT use 'to'.",
+        ] = None,
         selected_columns: Annotated[
             list[str] | None,
             "List of column names of news to return, should be chosen from 'assetTurnoverTTM', 'bookValue', 'cashRatio', 'currentRatio', 'ebitPerShare', 'eps', 'ev', 'fcfMargin', 'fcfPerShareTTM', 'grossMargin', 'inventoryTurnoverTTM', 'longtermDebtTotalAsset', 'longtermDebtTotalCapital', 'longtermDebtTotalEquity', 'netDebtToTotalCapital', 'netDebtToTotalEquity', 'netMargin', 'operatingMargin', 'payoutRatioTTM', 'pb', 'peTTM', 'pfcfTTM', 'pretaxMargin', 'psTTM', 'ptbv', 'quickRatio', 'receivablesTurnoverTTM', 'roaTTM', 'roeTTM', 'roicTTM', 'rotcTTM', 'salesPerShare', 'sgaToSale', 'tangibleBookValue', 'totalDebtToEquity', 'totalDebtToTotalAsset', 'totalDebtToTotalCapital', 'totalRatio'",

@@ -165,6 +165,7 @@ REGLAS ESTRICTAS E INQUEBRANTABLES:
 {{"name": "nombre_de_la_herramienta", "arguments": {{"parametro": "valor"}}}}
 ```
 4. No respondas con excusas. Si no tienes datos, usa las herramientas. Tu único objetivo es recopilar los DATOS CRUDOS y NUMÉRICOS recibidos y devolverlos al Analyst_Agent.
+5. REGLA DE NOMENCLATURA CRÍTICA DE PARÁMETROS: DEBES utilizar EXACTAMENTE los nombres de parámetros definidos en las herramientas. NUNCA uses la palabra `from` o `to` como clave JSON. Es OBLIGATORIO usar `start_date` y `end_date` estrictamente, de lo contrario causarás un CRASH FATAL.
 Máximo 8 llamadas a herramientas. 
 """,
         llm_config=ollama_config,

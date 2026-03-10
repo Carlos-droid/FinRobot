@@ -33,8 +33,8 @@ def get_ollama_config(
     Returns:
         dict compatible con pyautogen llm_config
     """
-    ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
-    ollama_model = model or os.getenv("OLLAMA_MODEL", "qwen2.5-coder:7b")
+    ollama_url = os.getenv("OLLAMA_URL", "http://192.168.50.253:11434")
+    ollama_model = model or os.getenv("OLLAMA_MODEL", "qwen3.5:9b-simple")
 
     config = {
         "config_list": [
@@ -44,7 +44,9 @@ def get_ollama_config(
                 "api_key": "ollama",  # Ollama no requiere key, pero pyautogen la exige
             }
         ],
-        "temperature": temperature,
+        "temperature": 0.0,
+        "top_p": 0.1,
+        "seed": 42,
     }
 
     log.info("Ollama config: model=%s, url=%s", ollama_model, ollama_url)
