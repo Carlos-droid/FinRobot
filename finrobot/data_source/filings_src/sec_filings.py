@@ -111,13 +111,15 @@ class SECExtractor:
             str: year for 10-K and year,month for 10-Q
         """
         details = filing_details.split("/")[-1]
-        if self.filing_type == "10-K":
-            matches = re.findall("20\d{2}", details)
-        elif self.filing_type == "10-Q":
-            matches = re.findall("20\d{4}", details)
+        matches = []
+        filing_type = getattr(self, "filing_type", None)
+        if filing_type == "10-K":
+            matches = re.findall(r"20\d{2}", details)
+        elif filing_type == "10-Q":
+            matches = re.findall(r"20\d{4}", details)
 
         if matches:
-            return matches[-1]  # Return the first match
+            return matches[0]  # Return the first match
         else:
             return None  # In case no match is found
 
