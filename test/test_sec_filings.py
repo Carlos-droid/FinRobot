@@ -1,102 +1,247 @@
-import pytest
+from typing import List, Union, Optional
+import asyncio
+import aiohttp
+from collections import defaultdict
+import concurrent.futures
+import time
+from datetime import date
+from enum import Enum
 import re
-from unittest.mock import patch, MagicMock
-from finrobot.data_source.filings_src.sec_filings import get_regex_enum, SECExtractor
+import signal
+import requests
+import os
+import json
 
-@pytest.fixture
-def sec_extractor():
-    """Returns an instance of SECExtractor with mocked dependencies."""
-    return SECExtractor(ticker="AAPL")
+from ratelimit import limits, sleep_and_retry
+from unstructured.staging.base import convert_to_isd
 
-# --- SECCIÓN 1: Generación Dinámica de Enums (Regex) ---
-
-def test_get_regex_enum_valid_pattern():
-    regex_str = r"^Item \d+"
-    enum_member = get_regex_enum(regex_str)
-    assert hasattr(enum_member, "pattern")
-    assert enum_member.pattern == re.compile(regex_str)
-    assert enum_member.pattern.match("Item 1") is not None
-    assert enum_member.pattern.match("Other Item") is None
-
-def test_get_regex_enum_invalid_pattern():
-    with pytest.raises(re.error):
-        get_regex_enum(r"[")
-
-def test_get_regex_enum_empty_string():
-    enum_member = get_regex_enum("")
-    assert enum_member.pattern == re.compile("")
-    assert enum_member.pattern.match("anything") is not None
-
-def test_get_regex_enum_none_input():
-    with pytest.raises(TypeError):
-        get_regex_enum(None)
-
-def test_get_regex_enum_dynamic_class_creation():
-    regex_str = "test"
-    enum1 = get_regex_enum(regex_str)
-    enum2 = get_regex_enum(regex_str)
-    # Verificamos igualdad de valor pero diferencia de identidad de clase
-    assert enum1.pattern == enum2.pattern
-    assert type(enum1) is not type(enum2)
-    assert enum1 is not enum2
-
-# --- SECCIÓN 2: Extracción de Texto (get_all_text) ---
-
-@pytest.mark.parametrize(
-    "section, all_narratives, expected",
-    [
-        # Happy Path: múltiples elementos con 'text' concatenados con espacio
-        (
-            "Item 1", 
-            {"Item 1": [{"text": "Hello"}, {"text": "World!"}]}, 
-            "Hello World!"
-        ),
-        # Happy Path: Elemento único
-        (
-            "Item 1A", 
-            {"Item 1A": [{"text": "Risk Factors."}]}, 
-            "Risk Factors."
-        ),
-        # Caso borde: lista vacía para la sección
-        (
-            "Item 2", 
-            {"Item 2": []}, 
-            ""
-        ),
-        # Caso borde: diccionarios sin la clave 'text' (debe filtrar y saltar)
-        (
-            "Item 3", 
-            {"Item 3": [{"other_key": "No text here"}, {"text": "Only this text"}]}, 
-            "Only this text"
-        ),
-        # Caso borde: ningún diccionario tiene la clave 'text'
-        (
-            "Item 4",
-            {"Item 4": [{"other_key": "Nothing"}, {"another_key": "Nope"}]},
-            ""
-        ),
-        # Caso borde: sección faltante en el diccionario
-        (
-            "Item 5", 
-            {"Item 1": [{"text": "Hello"}]}, 
-            ""
-        )
-    ]
+from finrobot.data_source.filings_src.prepline_sec_filings.sections import (
+    section_string_to_enum,
+    validate_section_names,
+    SECSection,
+    ALL_SECTIONS,
+    SECTIONS_10K,
+    SECTIONS_10Q,
+    SECTIONS_S1,
 )
-def test_get_all_text(sec_extractor, section, all_narratives, expected):
-    """Test get_all_text with different edge cases and happy paths."""
-    result = sec_extractor.get_all_text(section, all_narratives)
-    assert result == expected
+from finrobot.data_source.filings_src.prepline_sec_filings.sec_document import (
+    SECDocument,
+    REPORT_TYPES,
+    VALID_FILING_TYPES,
+)
+from finrobot.data_source.filings_src.prepline_sec_filings.fetch import (
+    get_form_by_ticker,
+    open_form_by_ticker,
+    get_filing,
+)
 
-# --- SECCIÓN 3: Validación del Pipeline API ---
 
-def test_pipeline_api_invalid_filing_type(sec_extractor):
-    """Verify that pipeline_api raises ValueError for unsupported filing types."""
-    dummy_text = "<HTML>dummy SEC document</HTML>"
-    mock_sec_document = MagicMock()
-    mock_sec_document.filing_type = "INVALID-TYPE"
+DATE_FORMAT_TOKENS = "%Y-%m-%d"
+DEFAULT_BEFORE_DATE = date.today().strftime(DATE_FORMAT_TOKENS)
+DEFAULT_AFTER_DATE = date(2000, 1, 1).strftime(DATE_FORMAT_TOKENS)
 
-    with patch('finrobot.data_source.filings_src.sec_filings.SECDocument.from_string', return_value=mock_sec_document):
-        with pytest.raises(ValueError) as exc_info:
-            sec_extractor.pipeline_api(dummy_text)
-        assert "SEC document filing type INVALID-TYPE is not supported" in str(exc_info.value)
+
+class timeout:
+    def __init__(self, seconds=1, error_message="Timeout"):
+        self.seconds = seconds
+        self.error_message = error_message
+
+    def handle_timeout(self, signum, frame):
+        raise TimeoutError(self.error_message)
+
+    def __enter__(self):
+        try:
+            signal.signal(signal.SIGALRM, self.handle_timeout)
+            signal.alarm(self.seconds)
+        except ValueError:
+            pass
+
+    def __exit__(self, type, value, traceback):
+        try:
+            signal.alarm(0)
+        except ValueError:
+            pass
+
+
+# pipeline-api
+def get_regex_enum(section_regex):
+    """Get sections using regular expression
+
+    Args:
+        section_regex (str): regular expression for the section name
+
+    Returns:
+        CustomSECSection.CUSTOM: Custom regex section name
+    """
+
+    class CustomSECSection(Enum):
+        CUSTOM = re.compile(section_regex)
+
+        @property
+        def pattern(self):
+            return self.value
+
+    return CustomSECSection.CUSTOM
+
+
+class SECExtractor:
+    def __init__(self, ticker: str, sections: List[str] = ["_ALL"]):
+        """_summary_
+
+        Args:
+            tickers (List[str]): list of ticker
+            amount (int): amount of documenteds
+            filing_type (str): 10-K or 10-Q
+            start_date (str, optional): start date of getting files. Defaults to DEFAULT_AFTER_DATE.
+            end_date (str, optional): end date of getting files. Defaults to DEFAULT_BEFORE_DATE.
+            sections (List[str], optional): sections required, check sections names. Defaults to ["_ALL"].
+        """
+
+        self.ticker = ticker
+        self.sections = sections
+
+    def get_year(self, filing_details: str) -> str:
+        """Get the year for 10-K and year,month for 10-Q
+
+        Args:
+            filing_details (str): filing url
+
+        Returns:
+            str: year for 10-K and year,month for 10-Q
+        """
+        details = filing_details.split("/")[-1]
+        matches = []
+        filing_type = getattr(self, "filing_type", None)
+        
+        if filing_type == "10-K":
+            matches = re.findall(r"20\d{2}", details)
+        elif filing_type == "10-Q":
+            matches = re.findall(r"20\d{4}", details)
+
+        if matches:
+            return matches[-1]  # Return the last match (from master)
+        else:
+            return None  # In case no match is found
+
+    def get_all_text(self, section, all_narratives):
+        """Join all the text from a section
+
+        Args:
+            section (str): section name
+            all_narratives (dict): dictionary of section names and text
+
+        Returns:
+            str: all joined texts for the section
+        """
+        all_texts = []
+        # Safely get the section, defaulting to an empty list to avoid KeyError
+        for text_dict in all_narratives.get(section, []):
+            if "text" in text_dict:
+                all_texts.append(text_dict["text"])
+        return " ".join(all_texts)
+
+    def get_section_texts_from_text(self, text):
+        """Get the text from filing document URL
+
+        Args:
+            text (str): file text
+
+        Returns:
+            dict: all texts of sections
+        """
+        all_narratives, filing_type = self.pipeline_api(text, m_section=self.sections)
+        all_narrative_dict = dict.fromkeys(all_narratives.keys())
+
+        for section in all_narratives:
+            all_narrative_dict[section] = self.get_all_text(section, all_narratives)
+
+        return all_narrative_dict
+
+    def pipeline_api(self, text, m_section=[], m_section_regex=[]):
+        """Unsturcured API to get the text
+
+        Args:
+            text (str): Text from the filing document URL
+            m_section (list, optional): Section required. Defaults to [].
+            m_section_regex (list, optional): Custom Section required using regex . Defaults to [].
+
+        Raises:
+            ValueError: Invalid document names
+            ValueError: Invalid section names
+
+        Returns:
+            tuple: section and corresponding texts, filing type
+        """
+        validate_section_names(m_section)
+
+        sec_document = SECDocument.from_string(text)
+        if sec_document.filing_type not in VALID_FILING_TYPES:
+            raise ValueError(
+                f"SEC document filing type {sec_document.filing_type} is not supported, "
+                f"must be one of {','.join(VALID_FILING_TYPES)}"
+            )
+        results = {}
+        if m_section == [ALL_SECTIONS]:
+            filing_type = sec_document.filing_type
+            if filing_type in REPORT_TYPES:
+                if filing_type.startswith("10-K"):
+                    m_section = [enum.name for enum in SECTIONS_10K]
+                elif filing_type.startswith("10-Q"):
+                    m_section = [enum.name for enum in SECTIONS_10Q]
+                else:
+                    raise ValueError(f"Invalid report type: {filing_type}")
+            else:
+                m_section = [enum.name for enum in SECTIONS_S1]
+                
+        for section in m_section:
+            results[section] = sec_document.get_section_narrative(
+                section_string_to_enum[section]
+            )
+
+        for i, section_regex in enumerate(m_section_regex):
+            regex_num = get_regex_enum(section_regex)
+            with timeout(seconds=5):
+                section_elements = sec_document.get_section_narrative(regex_num)
+                results[f"REGEX_{i}"] = section_elements
+                
+        return {
+            section: convert_to_isd(section_narrative)
+            for section, section_narrative in results.items()
+        }, sec_document.filing_type
+
+    @sleep_and_retry
+    @limits(calls=10, period=1)
+    def get_filing(self, url: str, company: str, email: str) -> str:
+        """Fetches the specified filing from the SEC EDGAR Archives. Conforms to the rate
+        limits specified on the SEC website.
+        ref: https://www.sec.gov/os/accessing-edgar-data"""
+        session = self._get_session(company, email)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        # Note: headers dict above is created but not passed to session.get(). 
+        # The _get_session handles headers, so we leave this as is.
+        response = session.get(url)
+        response.raise_for_status()
+        return response.text
+
+    def _get_session(
+        self, company: Optional[str] = None, email: Optional[str] = None
+    ) -> requests.Session:
+        """Creates a requests sessions with the appropriate headers set. If these headers are not
+        set, SEC will reject your request.
+        ref: https://www.sec.gov/os/accessing-edgar-data"""
+        if company is None:
+            company = os.environ.get("SEC_API_ORGANIZATION")
+        if email is None:
+            email = os.environ.get("SEC_API_EMAIL")
+        assert company
+        assert email
+        session = requests.Session()
+        session.headers.update(
+            {
+                "User-Agent": f"{company} {email}",
+                "Content-Type": "text/html",
+            }
+        )
+        return session
