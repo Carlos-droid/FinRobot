@@ -3,9 +3,8 @@ import pandas as pd
 from unittest.mock import MagicMock
 from finrobot.toolkits import stringify_output, register_toolkits
 
-# --- SECCIÓN 1: Tests para el decorador @stringify_output ---
+# --- SECCIÓN 1: Helpers y funciones decoradas para pruebas ---
 
-# Funciones de ayuda para testear el decorador
 @stringify_output
 def return_string():
     return "hello"
@@ -43,12 +42,15 @@ def echo_args_kwargs(*args, **kwargs):
     """Echoes back arguments and keyword arguments."""
     return args, kwargs
 
+
+# --- SECCIÓN 2: Tests para el decorador @stringify_output ---
+
 def test_stringify_basic_types():
     assert return_string() == "hello"
     assert return_int() == "42"
 
 def test_stringify_none():
-    # Verifica que str(None) retorne la cadena "None"
+    # Verifica que str(None) retorne la cadena "None" para no romper el flujo del LLM
     assert return_none() == "None"
 
 def test_stringify_empty_collections():
@@ -63,19 +65,21 @@ def test_stringify_dataframe():
     expected_str = pd.DataFrame({'A': [1, 2], 'B': [3, 4]}).to_string()
     assert df_str == expected_str
 
+
+
 def test_decorator_argument_passing():
     result = echo_args_kwargs(1, 2, a=3, b=4)
-    # El decorador debe retornar str( ((1, 2), {'a': 3, 'b': 4}) )
+    # El decorador debe retornar la representación en string de la tupla (args, kwargs)
     expected_result = str(((1, 2), {'a': 3, 'b': 4}))
     assert result == expected_result
 
 def test_decorator_metadata_preservation():
-    # Verifica que @wraps haya hecho su trabajo manteniendo nombre y docstring
+    # Verifica que @wraps preserve el nombre y docstring original para la introspección
     assert echo_args_kwargs.__name__ == "echo_args_kwargs"
     assert echo_args_kwargs.__doc__ == "Echoes back arguments and keyword arguments."
 
 
-# --- SECCIÓN 2: Tests para register_toolkits ---
+# --- SECCIÓN 3: Tests para register_toolkits ---
 
 def test_register_toolkits_missing_callable_function():
     """Verifica que falle si la configuración de la herramienta no es válida o invocable."""
@@ -83,14 +87,13 @@ def test_register_toolkits_missing_callable_function():
     mock_caller = MagicMock()
     mock_executor = MagicMock()
 
-    # Escenario 1: Falta la clave "function"
+    # Escenarios de error
     invalid_config_1 = [{"name": "invalid_tool", "description": "missing function"}]
-
-    # Escenario 2: La clave "function" existe pero no es un callable
     invalid_config_2 = [{"function": "not_a_callable"}]
 
     error_msg = "Function not found in tool configuration or not callable."
 
+    # Assert para configuración sin clave "function"
     with pytest.raises(ValueError, match=error_msg):
         register_toolkits(
             config=invalid_config_1,
@@ -98,6 +101,7 @@ def test_register_toolkits_missing_callable_function():
             executor=mock_executor
         )
 
+    # Assert para clave "function" no invocable
     with pytest.raises(ValueError, match=error_msg):
         register_toolkits(
             config=invalid_config_2,

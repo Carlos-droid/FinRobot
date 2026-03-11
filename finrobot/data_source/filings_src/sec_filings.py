@@ -132,10 +132,9 @@ class SECExtractor:
             _type_: _description_
         """
         all_texts = []
-        for text_dict in all_narratives[section]:
-            for key, val in text_dict.items():
-                if key == "text":
-                    all_texts.append(val)
+        for text_dict in all_narratives.get(section, []):
+            if "text" in text_dict:
+                all_texts.append(text_dict["text"])
         return " ".join(all_texts)
 
     def get_section_texts_from_text(self, text):
