@@ -51,3 +51,7 @@ def test_get_next_weekday_datetime(input_date, expected_date):
         ("2021-12-31", datetime(2021, 12, 31)),  # Viernes (se mantiene)
         ("2022-12-31", datetime(2023, 1, 2)),    # Sábado a Lunes (2 de Enero)
         ("2023-12-31", datetime(2024, 1, 1)),    # Domingo a L
+    ]
+)
+def test_get_next_weekday_string(input_str, expected_date):
+    assert get_next_weekday(input_str) == expected_date

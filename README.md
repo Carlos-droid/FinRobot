@@ -2,6 +2,8 @@
 <img align="center" width="30%" alt="image" src="https://github.com/AI4Finance-Foundation/FinGPT/assets/31713746/e0371951-1ce1-488e-aa25-0992dafcc139">
 </div>
 
+> ⚠️ **Security Notice:** By default, `FinRobot` uses PyAutogen with `use_docker=False` in its `code_execution_config`. This allows the AI agents to execute code on your local host environment. This poses a significant security risk if the LLM generates malicious code. Please use this software only in a controlled local environment or modify the `use_docker` parameter to `True` if you have Docker installed and prefer isolated execution.
+
 # FinRobot: An Open-Source AI Agent Platform for Financial Analysis using Large Language Models
 [![Downloads](https://static.pepy.tech/badge/finrobot)]([https://pepy.tech/project/finrobot](https://pepy.tech/project/finrobot))
 [![Downloads](https://static.pepy.tech/badge/finrobot/week)](https://pepy.tech/project/finrobot)

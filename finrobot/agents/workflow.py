@@ -1,7 +1,10 @@
 from .agent_library import library
+import logging
 from typing import Any, Callable, Dict, List, Optional, Annotated
 import autogen
 from autogen.cache import Cache
+
+logger = logging.getLogger(__name__)
 from autogen import (
     ConversableAgent,
     AssistantAgent,
@@ -138,6 +141,13 @@ class SingleAssistant(SingleAssistantBase):
         },
         **kwargs,
     ):
+        if isinstance(code_execution_config, dict) and not code_execution_config.get("use_docker", True):
+            logger.warning(
+                "⚠️ WARNING: `use_docker` is set to False in code_execution_config. "
+                "This allows the agent to execute code on the local host environment, "
+                "which poses a significant security risk. Use in a controlled local environment only."
+            )
+
         super().__init__(agent_config, llm_config=llm_config)
         self.user_proxy = UserProxyAgent(
             name="User_Proxy",
@@ -184,6 +194,13 @@ class SingleAssistantRAG(SingleAssistant):
         rag_description="",
         **kwargs,
     ):
+        if isinstance(code_execution_config, dict) and not code_execution_config.get("use_docker", True):
+            logger.warning(
+                "⚠️ WARNING: `use_docker` is set to False in code_execution_config. "
+                "This allows the agent to execute code on the local host environment, "
+                "which poses a significant security risk. Use in a controlled local environment only."
+            )
+
         super().__init__(
             agent_config,
             llm_config=llm_config,
@@ -224,6 +241,13 @@ class SingleAssistantShadow(SingleAssistant):
         },
         **kwargs,
     ):
+        if isinstance(code_execution_config, dict) and not code_execution_config.get("use_docker", True):
+            logger.warning(
+                "⚠️ WARNING: `use_docker` is set to False in code_execution_config. "
+                "This allows the agent to execute code on the local host environment, "
+                "which poses a significant security risk. Use in a controlled local environment only."
+            )
+
         super().__init__(
             agent_config,
             llm_config=llm_config,
@@ -286,6 +310,13 @@ class MultiAssistantBase(ABC):
         },
         **kwargs,
     ):
+        if isinstance(code_execution_config, dict) and not code_execution_config.get("use_docker", True):
+            logger.warning(
+                "⚠️ WARNING: `use_docker` is set to False in code_execution_config. "
+                "This allows the agent to execute code on the local host environment, "
+                "which poses a significant security risk. Use in a controlled local environment only."
+            )
+
         self.group_config = group_config
         self.llm_config = llm_config
         if user_proxy is None:
