@@ -119,7 +119,7 @@ class SECExtractor:
             matches = re.findall(r"20\d{4}", details)
 
         if matches:
-            return matches[-1]  # Return the last match (from master)
+            return matches[0]  # Return the first match (Bug fixed!)
         else:
             return None  # In case no match is found
 
@@ -158,7 +158,7 @@ class SECExtractor:
         return all_narrative_dict
 
     def pipeline_api(self, text, m_section=[], m_section_regex=[]):
-        """Unsturcured API to get the text
+        """Unstructured API to get the text
 
         Args:
             text (str): Text from the filing document URL
