@@ -144,7 +144,7 @@ def register_keys_from_json(file_path):
     with open(file_path, "r") as f:
         keys = json.load(f)
     for key, value in keys.items():
-        os.environ[key] = value
+        os.environ[key] = str(value)
 
 
 def decorate_all_methods(decorator):
