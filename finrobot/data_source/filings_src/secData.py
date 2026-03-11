@@ -8,7 +8,7 @@ import requests
 from finrobot.data_source.filings_src.prepline_sec_filings.fetch import get_filing
 import pandas as pd
 from datetime import datetime
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 
 def sec_main(

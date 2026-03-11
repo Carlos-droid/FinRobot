@@ -1,13 +1,24 @@
 from finrobot.data_source.earnings_calls_src.earningsData import get_earnings_transcript
 import re
-from langchain.schema import Document
+from langchain_core.documents import Document
 from tenacity import RetryError
 
 
 def clean_speakers(speaker):
-    speaker = re.sub("\n", "", speaker)
-    speaker = re.sub(":", "", speaker)
-    return speaker
+    if speaker is None:
+        return ""
+    if not isinstance(speaker, str):
+        speaker = str(speaker)
+
+    speaker = speaker.replace("\n", "")
+    speaker = speaker.replace(":", "")
+
+    # Remove text inside parentheses
+    speaker = re.sub(r"\(.*?\)", "", speaker)
+
+    # Reduce multiple spaces to a single one and trim
+    speaker = re.sub(r"\s+", " ", speaker)
+    return speaker.strip()
 
 
 def get_earnings_all_quarters_data(quarter: str, ticker: str, year: int):
