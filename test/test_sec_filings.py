@@ -45,11 +45,42 @@ def test_get_regex_enum_dynamic_class_creation():
 @pytest.mark.parametrize(
     "section, all_narratives, expected",
     [
-        ("Item 1", {"Item 1": [{"text": "Hello"}, {"text": "World!"}]}, "Hello World!"),
-        ("Item 1A", {"Item 1A": [{"text": "Risk Factors."}]}, "Risk Factors."),
-        ("Item 2", {"Item 2": []}, ""),
-        ("Item 3", {"Item 3": [{"text": "Only this text"}]}, "Only this text"),
-        ("Item 5", {"Item 1": [{"text": "Hello"}]}, "")
+        # Happy Path: múltiples elementos con 'text' concatenados con espacio
+        (
+            "Item 1", 
+            {"Item 1": [{"text": "Hello"}, {"text": "World!"}]}, 
+            "Hello World!"
+        ),
+        # Happy Path: Elemento único
+        (
+            "Item 1A", 
+            {"Item 1A": [{"text": "Risk Factors."}]}, 
+            "Risk Factors."
+        ),
+        # Caso borde: lista vacía para la sección
+        (
+            "Item 2", 
+            {"Item 2": []}, 
+            ""
+        ),
+        # Caso borde: diccionarios sin la clave 'text' (debe filtrar y saltar)
+        (
+            "Item 3", 
+            {"Item 3": [{"other_key": "No text here"}, {"text": "Only this text"}]}, 
+            "Only this text"
+        ),
+        # Caso borde: ningún diccionario tiene la clave 'text'
+        (
+            "Item 4",
+            {"Item 4": [{"other_key": "Nothing"}, {"another_key": "Nope"}]},
+            ""
+        ),
+        # Caso borde: sección faltante en el diccionario
+        (
+            "Item 5", 
+            {"Item 1": [{"text": "Hello"}]}, 
+            ""
+        )
     ]
 )
 def test_get_all_text(sec_extractor, section, all_narratives, expected):
