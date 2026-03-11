@@ -1,8 +1,11 @@
 import pytest
 import pandas as pd
-from finrobot.toolkits import stringify_output
+from unittest.mock import MagicMock
+from finrobot.toolkits import stringify_output, register_toolkits
 
-# Helper functions for testing
+# --- SECCIÓN 1: Tests para el decorador @stringify_output ---
+
+# Funciones de ayuda para testear el decorador
 @stringify_output
 def return_string():
     return "hello"
@@ -45,7 +48,7 @@ def test_stringify_basic_types():
     assert return_int() == "42"
 
 def test_stringify_none():
-    # As per current implementation, str(None) returns "None"
+    # Verifica que str(None) retorne la cadena "None"
     assert return_none() == "None"
 
 def test_stringify_empty_collections():
@@ -62,11 +65,42 @@ def test_stringify_dataframe():
 
 def test_decorator_argument_passing():
     result = echo_args_kwargs(1, 2, a=3, b=4)
-    # The result of echo_args_kwargs is a tuple ((1, 2), {'a': 3, 'b': 4})
-    # Since it's decorated, it should return str( ((1, 2), {'a': 3, 'b': 4}) )
+    # El decorador debe retornar str( ((1, 2), {'a': 3, 'b': 4}) )
     expected_result = str(((1, 2), {'a': 3, 'b': 4}))
     assert result == expected_result
 
 def test_decorator_metadata_preservation():
+    # Verifica que @wraps haya hecho su trabajo manteniendo nombre y docstring
     assert echo_args_kwargs.__name__ == "echo_args_kwargs"
     assert echo_args_kwargs.__doc__ == "Echoes back arguments and keyword arguments."
+
+
+# --- SECCIÓN 2: Tests para register_toolkits ---
+
+def test_register_toolkits_missing_callable_function():
+    """Verifica que falle si la configuración de la herramienta no es válida o invocable."""
+    # Setup de mocks
+    mock_caller = MagicMock()
+    mock_executor = MagicMock()
+
+    # Escenario 1: Falta la clave "function"
+    invalid_config_1 = [{"name": "invalid_tool", "description": "missing function"}]
+
+    # Escenario 2: La clave "function" existe pero no es un callable
+    invalid_config_2 = [{"function": "not_a_callable"}]
+
+    error_msg = "Function not found in tool configuration or not callable."
+
+    with pytest.raises(ValueError, match=error_msg):
+        register_toolkits(
+            config=invalid_config_1,
+            caller=mock_caller,
+            executor=mock_executor
+        )
+
+    with pytest.raises(ValueError, match=error_msg):
+        register_toolkits(
+            config=invalid_config_2,
+            caller=mock_caller,
+            executor=mock_executor
+        )
