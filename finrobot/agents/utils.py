@@ -17,9 +17,28 @@ def instruction_message(recipient, messages, sender, config):
 
 
 def order_trigger(sender, name, pattern):
-    # print(pattern)
-    # print(sender.name)
-    return sender.name == name and pattern in sender.last_message()["content"]
+    if not sender or not hasattr(sender, "name") or not hasattr(sender, "last_message"):
+        return False
+
+    sender_name = sender.name
+    if not isinstance(sender_name, str):
+        return False
+
+    last_msg = sender.last_message()
+    if not isinstance(last_msg, dict) or "content" not in last_msg:
+        return False
+
+    msg_content = last_msg["content"]
+    if not isinstance(msg_content, str):
+        return False
+
+    if not isinstance(name, str) or not isinstance(pattern, str):
+        return False
+
+    return (
+        sender_name.strip().lower() == name.strip().lower()
+        and pattern.strip().lower() in msg_content.strip().lower()
+    )
 
 
 def order_message(pattern, recipient, messages, sender, config):
