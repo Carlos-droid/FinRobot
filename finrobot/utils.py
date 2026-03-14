@@ -67,15 +67,24 @@ class HybridCache:
         try:
             # Flatten index if it's a DatetimeIndex
             df_to_save = df.copy()
-            df_to_save['symbol'] = symbol
             df_to_save['date'] = df_to_save.index.strftime('%Y-%m-%d')
             
+            # Prepare data for executemany
+            data_to_insert = list(zip(
+                [symbol] * len(df_to_save),
+                df_to_save['date'],
+                df_to_save['Open'],
+                df_to_save['High'],
+                df_to_save['Low'],
+                df_to_save['Close'],
+                df_to_save['Volume']
+            ))
+
             with sqlite3.connect(self.db_path) as conn:
-                for _, row in df_to_save.iterrows():
-                    conn.execute("""
-                        INSERT OR REPLACE INTO historical_prices (symbol, date, open, high, low, close, volume)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """, (symbol, row['date'], row['Open'], row['High'], row['Low'], row['Close'], row['Volume']))
+                conn.executemany("""
+                    INSERT OR REPLACE INTO historical_prices (symbol, date, open, high, low, close, volume)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, data_to_insert)
                 conn.commit()
             logger.debug(f"Cached {len(df_to_save)} records for {symbol} in SQLite.")
         except Exception as e:
