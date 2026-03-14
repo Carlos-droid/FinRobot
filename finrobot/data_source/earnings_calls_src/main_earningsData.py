@@ -5,8 +5,20 @@ from tenacity import RetryError
 
 
 def clean_speakers(speaker):
-    speaker = re.sub("\n", "", speaker)
-    speaker = re.sub(":", "", speaker)
+    if speaker is None:
+        return ""
+    if not isinstance(speaker, str):
+        speaker = str(speaker)
+
+    # Remove newlines and colons
+    speaker = speaker.replace("\n", "").replace(":", "")
+
+    # Remove text in parentheses (and the parentheses themselves)
+    speaker = re.sub(r"\(.*?\)", "", speaker)
+
+    # Normalize erratic whitespace (multiple spaces to one) and strip ends
+    speaker = re.sub(r"\s+", " ", speaker).strip()
+
     return speaker
 
 
