@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "/home/ia/FinRobot-master/batch_compare.py", line 4, in <module>
-    from finrobot_engine import run_finrobot_analysis
-  File "/home/ia/FinRobot-master/finrobot_engine.py", line 2, in <module>
-    import autogen
-ModuleNotFoundError: No module named 'autogen'

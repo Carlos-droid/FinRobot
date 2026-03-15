@@ -33,7 +33,7 @@ def get_ollama_config(
     Returns:
         dict compatible con pyautogen llm_config
     """
-    ollama_url = os.getenv("OLLAMA_URL", "http://192.168.50.253:11434")
+    ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
     ollama_model = model or os.getenv("OLLAMA_MODEL", "qwen3.5:9b-simple")
 
     config = {
