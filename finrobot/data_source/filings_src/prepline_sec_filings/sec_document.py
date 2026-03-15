@@ -40,7 +40,7 @@ VALID_FILING_TYPES: Final[List[str]] = [
 REPORT_TYPES: Final[List[str]] = ["10-K", "10-Q", "10-K/A", "10-Q/A"]
 S1_TYPES: Final[List[str]] = ["S-1", "S-1/A"]
 
-ITEM_TITLE_RE = re.compile(r"(?i)item \d{1,3}(?:[a-z]|\([a-z]\))?(?:\.)?(?::)?")
+ITEM_TITLE_RE = re.compile(r"(?i)(?:item\s*\d{1,3}(?:[a-z]|\([a-z]\))?|part\s*[ivx]{1,4})(?:\.)?(?::)?")
 
 # NOTE(yuming): clean_sec_text is a partial cleaner from clean,
 # and is used for cleaning a section of text from a SEC filing.
@@ -113,9 +113,9 @@ class SECDocument(HTMLDocument):
             cluster_elements: List[Text] = [self.elements[i] for i in idxs]
             if any(
                 [
-                    # TODO(alan): Maybe swap risk title out for something more generic? It helps to
-                    # have 2 markers though, I think.
-                    is_risk_title(el.text, self.filing_type)
+                    # NOTE(alan): Swap risk title out for something more generic. It helps to
+                    # have 2 markers to properly identify the TOC.
+                    is_item_title(el.text, self.filing_type)
                     for el in cluster_elements
                     if isinstance(el, Title)
                 ]
