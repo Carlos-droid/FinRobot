@@ -7,6 +7,11 @@ import re
 import subprocess
 from typing import List, Dict, Any, Literal
 
+# ── Project root: parent of finrobot-backend/ ──
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+VENV_PYTHON = os.path.join(PROJECT_ROOT, "venv", "bin", "python")
+ENGINE_SCRIPT = os.path.join(PROJECT_ROOT, "finrobot_engine.py")
+
 class DataFormat(BaseModel):
     data_type: str
     parse_as: Literal["text", "table", "chart"]
@@ -18,9 +23,14 @@ class OmniWidgetResponse(BaseModel):
 
 app = FastAPI(title="FinRobot OpenBB Backend")
 
+ALLOWED_ORIGINS = os.getenv(
+    "CORS_ORIGINS",
+    "https://pro.openbb.co,https://pro.openbb.dev,http://localhost:1420"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -72,9 +82,10 @@ def get_agents():
 # WATCHLIST endpoint
 # ─────────────────────────────────────────────
 WATCHLIST_DEFAULT = [
-    "AI.MC","DIA.MC","GRF.MC","IBE.MC","IAG.MC",
-    "LOG.MC","MAP.MC","MVC.MC","RED.MC","REP.MC","TEF.MC",
-    "SAN.MC","ITX.MC"
+    t.strip() for t in os.getenv(
+        "WATCHLIST_TICKERS",
+        "AI.MC,DIA.MC,GRF.MC,IBE.MC,IAG.MC,LOG.MC,MAP.MC,MVC.MC,RED.MC,REP.MC,TEF.MC,SAN.MC,ITX.MC"
+    ).split(",")
 ]
 
 @app.get("/api/watchlist")
@@ -163,7 +174,7 @@ def get_ticker_analysis(finrobot_symbol: str = "LOG.MC", model_type: str = "loca
     try:
         # Read FinRobot reports from the output directory
         symbol_dir = finrobot_symbol.replace(".", "_")
-        report_path = f"/home/ia/FinRobot-master/reporte_{symbol_dir}_{model_type}.md"
+        report_path = os.path.join(PROJECT_ROOT, f"reporte_{symbol_dir}_{model_type}.md")
         
         content = ""
         if os.path.exists(report_path):
@@ -171,7 +182,7 @@ def get_ticker_analysis(finrobot_symbol: str = "LOG.MC", model_type: str = "loca
                 content = f.read()
         else:
             # Fallback to general report if model-specific doesn't exist
-            fallback_path = f"/home/ia/FinRobot-master/reporte_{symbol_dir}.md"
+            fallback_path = os.path.join(PROJECT_ROOT, f"reporte_{symbol_dir}.md")
             if os.path.exists(fallback_path):
                  with open(fallback_path, "r") as f:
                     content = f.read()
@@ -230,8 +241,8 @@ def run_finrobot_bg(ticker: str, model: str):
         import logging
         logging.info(f"[FinRobot BG] Launching analysis: ticker={ticker}, model={model}")
         subprocess.Popen([
-            "/home/ia/FinRobot-master/venv/bin/python", 
-            "/home/ia/FinRobot-master/finrobot_engine.py", 
+            VENV_PYTHON, 
+            ENGINE_SCRIPT, 
             ticker, ticker, model
         ])
     except Exception as e:

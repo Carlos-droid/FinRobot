@@ -375,8 +375,8 @@ class ReportAnalysisUtils:
             else 0
         )
 
-        fiftyTwoWeekLow = hist["High"].min()
-        fiftyTwoWeekHigh = hist["Low"].max()
+        fiftyTwoWeekLow = hist["Low"].min()
+        fiftyTwoWeekHigh = hist["High"].max()
 
         # avg_daily_volume_6m = hist['Volume'].mean()
 

@@ -13,14 +13,13 @@ from ..utils import decorate_all_methods, save_output, SavePathType
 def init_finnhub_client(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        global finnhub_client
         if os.environ.get("FINNHUB_API_KEY") is None:
             print(
                 "Please set the environment variable FINNHUB_API_KEY to use the Finnhub API."
             )
             return None
         else:
-            finnhub_client = finnhub.Client(api_key=os.environ["FINNHUB_API_KEY"])
+            FinnHubUtils._client = finnhub.Client(api_key=os.environ["FINNHUB_API_KEY"])
             print("Finnhub client initialized")
             return func(*args, **kwargs)
 
@@ -30,12 +29,13 @@ def init_finnhub_client(func):
 
 @decorate_all_methods(init_finnhub_client)
 class FinnHubUtils:
+    _client = None
 
     def get_company_profile(symbol: Annotated[str, "ticker symbol"]) -> str:
         """
         get a company's profile information
         """
-        profile = finnhub_client.company_profile2(symbol=symbol)
+        profile = FinnHubUtils._client.company_profile2(symbol=symbol)
         if not profile:
             return f"Failed to find company profile for symbol {symbol} from finnhub!"
 
@@ -72,7 +72,7 @@ class FinnHubUtils:
         - You MUST use EXACTLY 'start_date' and 'end_date' parameter names.
         - DO NOT use 'from' or 'to'.
         """
-        news = finnhub_client.company_news(symbol, _from=start_date, to=end_date)
+        news = FinnHubUtils._client.company_news(symbol, _from=start_date, to=end_date)
         if len(news) == 0:
             print(f"No company news found for symbol {symbol} from finnhub!")
         news = [
@@ -116,7 +116,7 @@ class FinnHubUtils:
         if freq not in ["annual", "quarterly"]:
             return f"Invalid reporting frequency {freq}. Please specify either 'annual' or 'quarterly'."
 
-        basic_financials = finnhub_client.company_basic_financials(symbol, "all")
+        basic_financials = FinnHubUtils._client.company_basic_financials(symbol, "all")
         if not basic_financials["series"]:
             return f"Failed to find basic financials for symbol {symbol} from finnhub! Try a different symbol."
 
@@ -144,7 +144,7 @@ class FinnHubUtils:
         """
         get latest basic financials for a designated company
         """
-        basic_financials = finnhub_client.company_basic_financials(symbol, "all")
+        basic_financials = FinnHubUtils._client.company_basic_financials(symbol, "all")
         if not basic_financials["series"]:
             return f"Failed to find basic financials for symbol {symbol} from finnhub! Try a different symbol."
 
@@ -153,7 +153,7 @@ class FinnHubUtils:
             value = value_list[0]
             output_dict.update({metric: value["v"]})
 
-        for k in output_dict.keys():
+        for k in list(output_dict.keys()):
             if selected_columns and k not in selected_columns:
                 output_dict.pop(k)
 

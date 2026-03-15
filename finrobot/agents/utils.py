@@ -4,7 +4,16 @@ from .prompts import order_template
 
 def instruction_trigger(sender):
     # Check if the last message contains the path to the instruction text file
-    return "instruction & resources saved to" in sender.last_message()["content"]
+    if not hasattr(sender, "last_message") or not callable(sender.last_message):
+        return False
+
+    last_msg = sender.last_message()
+    if isinstance(last_msg, dict) and "content" in last_msg:
+        content = last_msg["content"]
+        if isinstance(content, str):
+            return "instruction & resources saved to" in content
+
+    return False
 
 
 def instruction_message(recipient, messages, sender, config):
