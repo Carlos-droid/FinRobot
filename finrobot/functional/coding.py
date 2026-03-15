@@ -1,8 +1,19 @@
 import os
 from typing_extensions import Annotated
 from IPython import get_ipython
+from pathlib import Path
 
 default_path = "coding/"
+
+def is_safe_path(base_dir: str, requested_path: str) -> bool:
+    """Ensure the requested path resolves to a location strictly within the base_dir."""
+    base = Path(base_dir).resolve()
+    target = (Path(base_dir) / requested_path).resolve()
+
+    try:
+        return target.is_relative_to(base)
+    except AttributeError:
+        return str(target).startswith(str(base))
 
 
 class IPythonUtils:
@@ -41,6 +52,8 @@ class CodingUtils:  # Borrowed from https://microsoft.github.io/autogen/docs/not
         """
         List files in choosen directory.
         """
+        if not is_safe_path(default_path, directory):
+            return "Error: Path traversal detected. You can only access files within the 'coding/' directory."
         files = os.listdir(default_path + directory)
         return str(files)
 
@@ -48,6 +61,8 @@ class CodingUtils:  # Borrowed from https://microsoft.github.io/autogen/docs/not
         """
         Check the contents of a chosen file.
         """
+        if not is_safe_path(default_path, filename):
+            return "Error: Path traversal detected. You can only access files within the 'coding/' directory."
         with open(default_path + filename, "r") as file:
             lines = file.readlines()
         formatted_lines = [f"{i+1}:{line}" for i, line in enumerate(lines)]
@@ -67,6 +82,8 @@ class CodingUtils:  # Borrowed from https://microsoft.github.io/autogen/docs/not
         """
         Replace old piece of code with new one. Proper indentation is important.
         """
+        if not is_safe_path(default_path, filename):
+            return "Error: Path traversal detected. You can only access files within the 'coding/' directory."
         with open(default_path + filename, "r+") as file:
             file_contents = file.readlines()
             file_contents[start_line - 1 : end_line] = [new_code + "\n"]
@@ -82,6 +99,8 @@ class CodingUtils:  # Borrowed from https://microsoft.github.io/autogen/docs/not
         """
         Create a new file with provided code.
         """
+        if not is_safe_path(default_path, filename):
+            return "Error: Path traversal detected. You can only access files within the 'coding/' directory."
         directory = os.path.dirname(default_path + filename)
         os.makedirs(directory, exist_ok=True)
         with open(default_path + filename, "w") as file:
