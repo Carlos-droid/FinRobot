@@ -9,115 +9,101 @@ from finrobot.data_source.earnings_calls_src.main_earningsData import (
 )
 
 # --- SECCIÓN 1: Pruebas de limpieza de oradores (clean_speakers) ---
+# Hemos unificado los casos de ambas ramas para máxima cobertura.
 
 @pytest.mark.parametrize(
     "input_speaker, expected",
     [
-        # Comportamiento original
+        # Casos básicos y limpieza de caracteres
+        ("John Doe\n", "John Doe"),
+        ("Jane Smith:", "Jane Smith"),
+        ("Bob\n:", "Bob"),
         ("John Doe:\n", "John Doe"),
-        # Títulos entre paréntesis
+        
+        # Manejo de títulos corporativos y paréntesis
         ("John Doe (CEO)", "John Doe"),
-        # Paréntesis múltiples
         ("Jane Smith (Managing Director) (Analyst)", "Jane Smith"),
-        # Espacios excesivos
+        ("Alice (VP)\n: ", "Alice"),
+        ("Bob (CTO) \n (Interim CEO):", "Bob"),
+        
+        # Espacios y normalización
         ("  Dr. Robert Smith  ", "Dr. Robert Smith"),
-        # Nombres con iniciales o prefijos
-        ("Mr. John A. Doe", "Mr. John A. Doe"),
-        # Caracteres especiales
+        ("\n  Jane-Doe (CFO):  ", "Jane-Doe"),
+        
+        # Preservación de puntuación válida en nombres
+        ("Mr. John A. Doe, Jr.", "Mr. John A. Doe, Jr."),
         ("O'Connor", "O'Connor"),
         ("Jean-Pierre", "Jean-Pierre"),
-        # Tipos no-string (Manejo defensivo)
+        
+        # Programación defensiva: Tipos no-string
         (None, ""),
         (12345, "12345"),
-        # Casos combinados
-        ("\n  Jane-Doe (CFO):  ", "Jane-Doe")
+        (12.34, "12.34"),
     ]
 )
 def test_clean_speakers(input_speaker, expected):
-    """Verifica que la limpieza de nombres de oradores sea robusta."""
+    """Verifica que la limpieza de nombres de oradores sea robusta y profesional."""
     assert clean_speakers(input_speaker) == expected
 
 
-# --- SECCIÓN 2: Pruebas de manejo de errores en obtención de documentos ---
+# --- SECCIÓN 2: Pruebas de manejo de errores y flujo de datos ---
 
 def create_retry_error():
-    """Helper para crear un RetryError realista para las pruebas."""
+    """Helper para crear un RetryError realista. Simula un fallo tras reintentos de red."""
     mock_future = Mock(spec=Future)
     return RetryError(last_attempt=mock_future)
-
-@pytest.fixture
-def mock_docs_and_speakers():
-    """Fixture que devuelve datos de éxito genéricos."""
-    docs = [Document(page_content="Some content", metadata={"speaker": "Speaker 1", "quarter": "Q"})]
-    speakers = ["Speaker 1"]
-    return docs, speakers
 
 @pytest.mark.parametrize(
     "side_effect_list, expected_quarters, expected_output_msgs",
     [
-        # Escenario 1: El Q1 falla, Q2-Q4 tienen éxito
+        # Escenario 1: El Q1 falla por red, Q2-Q4 funcionan correctamente
         (
             [
-                create_retry_error(), # Q1 falla
-                ([Document(page_content="Q2 doc", metadata={"speaker": "Spk2", "quarter": "Q2"})], ["Spk2"]),
-                ([Document(page_content="Q3 doc", metadata={"speaker": "Spk3", "quarter": "Q3"})], ["Spk3"]),
-                ([Document(page_content="Q4 doc", metadata={"speaker": "Spk4", "quarter": "Q4"})], ["Spk4"])
+                create_retry_error(), 
+                ([Document(page_content="Q2", metadata={"speaker": "S2", "quarter": "Q2"})], ["S2"]),
+                ([Document(page_content="Q3", metadata={"speaker": "S3", "quarter": "Q3"})], ["S3"]),
+                ([Document(page_content="Q4", metadata={"speaker": "S4", "quarter": "Q4"})], ["S4"])
             ],
             ["Q2", "Q3", "Q4"],
             ["Don't have the data for Q1"]
         ),
-        # Escenario 2: Todos los trimestres fallan
+        # Escenario 2: Apocalipsis de red - Todos los trimestres fallan
         (
-            [
-                create_retry_error(), # Q1 falla
-                create_retry_error(), # Q2 falla
-                create_retry_error(), # Q3 falla
-                create_retry_error()  # Q4 falla
-            ],
+            [create_retry_error() for _ in range(4)],
             [],
-            [
-                "Don't have the data for Q1",
-                "Don't have the data for Q2",
-                "Don't have the data for Q3",
-                "Don't have the data for Q4"
-            ]
+            [f"Don't have the data for Q{i}" for i in range(1, 5)]
         )
     ],
-    ids=["q1_fails_others_succeed", "all_quarters_fail"]
+    ids=["q1_network_fail", "total_network_blackout"]
 )
 @patch("finrobot.data_source.earnings_calls_src.main_earningsData.get_earnings_all_quarters_data")
-def test_get_earnings_all_docs_retry_error(
+def test_get_earnings_all_docs_handling(
     mock_get_data, capsys, side_effect_list, expected_quarters, expected_output_msgs
 ):
-    """Verifica que la función principal maneje fallos de red/API mediante RetryError."""
-    # Configurar el comportamiento del mock
+    """
+    Verifica que la orquestación principal no se detenga ante fallos de trimestres individuales.
+    Esto es crítico para la usabilidad: si un trimestre falta, queremos los otros tres.
+    """
     mock_get_data.side_effect = side_effect_list
 
-    # Ejecución
-    ticker = "AAPL"
-    year = 2023
-    result = get_earnings_all_docs(ticker, year)
+    # Ejecución simulada para Apple 2023
+    result = get_earnings_all_docs("AAPL", 2023)
 
-    # Desempaquetado de resultados
-    (
-        earnings_docs,
-        earnings_call_quarter_vals,
-        speakers_list_1,
-        speakers_list_2,
-        speakers_list_3,
-        speakers_list_4,
-    ) = result
+    # Desempaquetado del resultado complejo
+    (docs, quarters, q1_spk, q2_spk, q3_spk, q4_spk) = result
 
-    # Verificar trimestres procesados
-    assert earnings_call_quarter_vals == expected_quarters
+    # 1. Validar que solo se registraron los trimestres exitosos
+    assert quarters == expected_quarters
 
-    # Verificar que las listas de oradores estén vacías si el trimestre falló
-    assert speakers_list_1 == ([] if isinstance(side_effect_list[0], Exception) else side_effect_list[0][1])
-    assert speakers_list_2 == ([] if isinstance(side_effect_list[1], Exception) else side_effect_list[1][1])
-    assert speakers_list_3 == ([] if isinstance(side_effect_list[2], Exception) else side_effect_list[2][1])
-    assert speakers_list_4 == ([] if isinstance(side_effect_list[3], Exception) else side_effect_list[3][1])
+    # 2. Validar manejo de listas de oradores (deben ser [] si el trimestre falló)
+    spk_lists = [q1_spk, q2_spk, q3_spk, q4_spk]
+    for i, effect in enumerate(side_effect_list):
+        if isinstance(effect, Exception):
+            assert spk_lists[i] == []
+        else:
+            assert spk_lists[i] == effect[1]
 
-    # Verificar mensajes en la salida estándar (stdout)
+    # 3. Validar logs informativos para el usuario
     captured = capsys.readouterr()
     for msg in expected_output_msgs:
         assert msg in captured.out
