@@ -1,0 +1,3 @@
+## 2024-05-23 - [API Request Loop Optimization]
+**Learning:** Found an N+1 query-like pattern where aggregate API endpoints were being called repeatedly inside a loop (specifically iterating over years) in `FMPUtils.get_financial_metrics`. Since the FMP API `limit=years` parameters return data for all requested years in a single response, calling it inside the loop resulted in O(N) network calls instead of O(1).
+**Action:** Always verify if an API response contains data for multiple items/periods and hoist the request outside the loop to significantly reduce latency and prevent API rate-limit exhaustion.

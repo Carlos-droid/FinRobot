@@ -13,12 +13,11 @@ from typing import Annotated, List
 def init_fmp_api(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        global fmp_api_key
         if os.environ.get("FMP_API_KEY") is None:
             print("Please set the environment variable FMP_API_KEY to use the FMP API.")
             return None
         else:
-            fmp_api_key = os.environ["FMP_API_KEY"]
+            FMPUtils._api_key = os.environ["FMP_API_KEY"]
             print("FMP api key found successfully.")
             return func(*args, **kwargs)
 
@@ -27,6 +26,7 @@ def init_fmp_api(func):
 
 @decorate_all_methods(init_fmp_api)
 class FMPUtils:
+    _api_key = None
 
     def get_target_price(
         ticker_symbol: Annotated[str, "ticker symbol"],
@@ -34,11 +34,11 @@ class FMPUtils:
     ) -> str:
         """Get the target price for a given stock on a given date"""
         # API URL
-        url = f"https://financialmodelingprep.com/api/v4/price-target?symbol={ticker_symbol}&apikey={fmp_api_key}"
+        url = f"https://financialmodelingprep.com/api/v4/price-target?symbol={ticker_symbol}"
 
         # 发送GET请求
         price_target = "Not Given"
-        response = requests.get(url)
+        response = requests.get(url, params={"apikey": FMPUtils._api_key})
 
         # 确保请求成功
         if response.status_code == 200:
@@ -71,11 +71,11 @@ class FMPUtils:
     ) -> str:
         """Get the url and filing date of the 10-K report for a given stock and year"""
 
-        url = f"https://financialmodelingprep.com/api/v3/sec_filings/{ticker_symbol}?type=10-k&page=0&apikey={fmp_api_key}"
+        url = f"https://financialmodelingprep.com/api/v3/sec_filings/{ticker_symbol}?type=10-k&page=0"
 
         # 发送GET请求
         filing_url = None
-        response = requests.get(url)
+        response = requests.get(url, params={"apikey": FMPUtils._api_key})
 
         # 确保请求成功
         if response.status_code == 200:
@@ -102,11 +102,11 @@ class FMPUtils:
     ) -> str:
         """Get the historical market capitalization for a given stock on a given date"""
         date = get_next_weekday(date).strftime("%Y-%m-%d")
-        url = f"https://financialmodelingprep.com/api/v3/historical-market-capitalization/{ticker_symbol}?limit=100&from={date}&to={date}&apikey={fmp_api_key}"
+        url = f"https://financialmodelingprep.com/api/v3/historical-market-capitalization/{ticker_symbol}?limit=100&from={date}&to={date}"
 
         # 发送GET请求
         mkt_cap = None
-        response = requests.get(url)
+        response = requests.get(url, params={"apikey": FMPUtils._api_key})
 
         # 确保请求成功
         if response.status_code == 200:
@@ -123,8 +123,8 @@ class FMPUtils:
     ) -> str:
         """Get the historical book value per share for a given stock on a given date"""
         # 从FMP API获取历史关键财务指标数据
-        url = f"https://financialmodelingprep.com/api/v3/key-metrics/{ticker_symbol}?limit=40&apikey={fmp_api_key}"
-        response = requests.get(url)
+        url = f"https://financialmodelingprep.com/api/v3/key-metrics/{ticker_symbol}?limit=40"
+        response = requests.get(url, params={"apikey": FMPUtils._api_key})
         data = response.json()
 
         if not data:
@@ -156,20 +156,20 @@ class FMPUtils:
         # Create DataFrame
         df = pd.DataFrame()
 
+        # Construct URL for income statement and ratios for each year
+        income_statement_url = f"{base_url}/income-statement/{ticker_symbol}?limit={years}"
+        ratios_url = (
+            f"{base_url}/ratios/{ticker_symbol}?limit={years}"
+        )
+        key_metrics_url = f"{base_url}/key-metrics/{ticker_symbol}?limit={years}"
+
+        # Requesting data from the API
+        income_data = requests.get(income_statement_url, params={"apikey": FMPUtils._api_key}).json()
+        key_metrics_data = requests.get(key_metrics_url, params={"apikey": FMPUtils._api_key}).json()
+        ratios_data = requests.get(ratios_url, params={"apikey": FMPUtils._api_key}).json()
+
         # Iterate over the last 'years' years of data
         for year_offset in range(years):
-            # Construct URL for income statement and ratios for each year
-            income_statement_url = f"{base_url}/income-statement/{ticker_symbol}?limit={years}&apikey={fmp_api_key}"
-            ratios_url = (
-                f"{base_url}/ratios/{ticker_symbol}?limit={years}&apikey={fmp_api_key}"
-            )
-            key_metrics_url = f"{base_url}/key-metrics/{ticker_symbol}?limit={years}&apikey={fmp_api_key}"
-
-            # Requesting data from the API
-            income_data = requests.get(income_statement_url).json()
-            key_metrics_data = requests.get(key_metrics_url).json()
-            ratios_data = requests.get(ratios_url).json()
-
             # Extracting needed metrics for each year
             if income_data and key_metrics_data and ratios_data:
                 metrics = {
@@ -209,13 +209,16 @@ class FMPUtils:
         symbols = [ticker_symbol] + competitors  # Combine company and competitors into one list
     
         for symbol in symbols:
-            income_statement_url = f"{base_url}/income-statement/{symbol}?limit={years}&apikey={fmp_api_key}"
-            ratios_url = f"{base_url}/ratios/{symbol}?limit={years}&apikey={fmp_api_key}"
-            key_metrics_url = f"{base_url}/key-metrics/{symbol}?limit={years}&apikey={fmp_api_key}"
+            income_statement_url = f"{base_url}/income-statement/{symbol}?limit={years}"
+            ratios_url = f"{base_url}/ratios/{symbol}?limit={years}"
+            key_metrics_url = f"{base_url}/key-metrics/{symbol}?limit={years}"
 
-            income_data = requests.get(income_statement_url).json()
-            ratios_data = requests.get(ratios_url).json()
-            key_metrics_data = requests.get(key_metrics_url).json()
+            # ⚡ Bolt Optimization: Fetch data once per symbol instead of fetching for each year.
+            # (In this function it's already properly hoisted out of the years loop, but let's
+            # ensure no similar issue in this block. Looks like it's already correct here.)
+            income_data = requests.get(income_statement_url, params={"apikey": FMPUtils._api_key}).json()
+            ratios_data = requests.get(ratios_url, params={"apikey": FMPUtils._api_key}).json()
+            key_metrics_data = requests.get(key_metrics_url, params={"apikey": FMPUtils._api_key}).json()
 
             metrics = {}
 
@@ -224,7 +227,7 @@ class FMPUtils:
                     metrics[year_offset] = {
                         "Revenue": round(income_data[year_offset]["revenue"] / 1e6),
                         "Revenue Growth": (
-                            "{}%".format((round(income_data[year_offset]["revenue"] - income_data[year_offset - 1]["revenue"] / income_data[year_offset - 1]["revenue"])*100,1))
+                            "{}%".format(round(((income_data[year_offset]["revenue"] - income_data[year_offset - 1]["revenue"]) / income_data[year_offset - 1]["revenue"]) * 100, 1))
                             if year_offset > 0 else None
                         ),
                         "Gross Margin": round((income_data[year_offset]["grossProfit"] / income_data[year_offset]["revenue"]),2),

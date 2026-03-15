@@ -1,0 +1,44 @@
+# Git
+.git
+.gitmodules
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+dist/
+build/
+*.egg
+
+# Entorno virtual
+venv/
+.venv/
+
+# Secretos — NUNCA incluir en la imagen
+.env
+OAI_CONFIG_LIST
+PERSONAL_KEYS
+config_api_keys
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Datos temporales
+coding/
+output/
+tmp/
+filings/
+.cache/
+.ipynb_checkpoints/
+
+# Otros
+*.csv
+*.jpg
+*.png
+.DS_Store
+projects/
+quant/

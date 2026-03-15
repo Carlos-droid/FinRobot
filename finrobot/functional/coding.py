@@ -1,108 +1,120 @@
 import os
+import sys
+import re
 from typing_extensions import Annotated
 from IPython import get_ipython
 from pathlib import Path
 
+# Configuración de ruta base para la ejecución de código
 default_path = "coding/"
 
-def is_safe_path(base_dir: str, requested_path: str) -> bool:
-    """Ensure the requested path resolves to a location strictly within the base_dir."""
-    base = Path(base_dir).resolve()
-    target = (Path(base_dir) / requested_path).resolve()
+def _get_safe_path(base_path: str, filename: str) -> Path:
+    """
+    Construye una ruta absoluta segura y garantiza que no escape 
+    del directorio base (prevención de Path Traversal).
+    """
+    base = Path(base_path).resolve()
+    # Unir la ruta base con el archivo solicitado y resolver
+    target = (base / filename).resolve()
 
+    # Verificar que el target esté dentro del base
     try:
-        return target.is_relative_to(base)
-    except AttributeError:
-        return str(target).startswith(str(base))
+        if not target.is_relative_to(base):
+            raise ValueError(f"Acceso denegado: La ruta '{filename}' está fuera de '{base_path}'")
+    except AttributeError: # Fallback para Python < 3.9
+        if not str(target).startswith(str(base)):
+            raise ValueError(f"Acceso denegado: La ruta '{filename}' está fuera de '{base_path}'")
+            
+    return target
 
 
 class IPythonUtils:
-
+    @staticmethod
     def exec_python(cell: Annotated[str, "Valid Python cell to execute."]) -> str:
-        """
-        run cell in ipython and return the execution result.
-        """
+        """Ejecuta una celda en IPython y devuelve el resultado o el error."""
         ipython = get_ipython()
+        if ipython is None:
+            return "Error: No se detectó un entorno IPython activo."
+            
         result = ipython.run_cell(cell)
-        log = str(result.result)
+        log = str(result.result) if result.result is not None else ""
+        
         if result.error_before_exec is not None:
-            log += f"\n{result.error_before_exec}"
+            log += f"\nError antes de ejecución: {result.error_before_exec}"
         if result.error_in_exec is not None:
-            log += f"\n{result.error_in_exec}"
+            log += f"\nError en ejecución: {result.error_in_exec}"
         return log
 
+    @staticmethod
     def display_image(
         image_path: Annotated[str, "Path to image file to display."]
     ) -> str:
-        """
-        Display image in Jupyter Notebook.
-        """
-        log = __class__.exec_python(
+        """Muestra una imagen en el Jupyter Notebook."""
+        log = IPythonUtils.exec_python(
             f"from IPython.display import Image, display\n\ndisplay(Image(filename='{image_path}'))"
         )
-        if not log:
-            return "Image displayed successfully"
-        else:
-            return log
+        return "Image displayed successfully" if not log else log
 
 
-class CodingUtils:  # Borrowed from https://microsoft.github.io/autogen/docs/notebooks/agentchat_function_call_code_writing
+class CodingUtils:
+    """Utilidades para la gestión de archivos y código dentro del entorno seguro."""
 
+    @staticmethod
     def list_dir(directory: Annotated[str, "Directory to check."]) -> str:
-        """
-        List files in choosen directory.
-        """
-        if not is_safe_path(default_path, directory):
-            return "Error: Path traversal detected. You can only access files within the 'coding/' directory."
-        files = os.listdir(default_path + directory)
-        return str(files)
+        """Lista los archivos en el directorio elegido."""
+        try:
+            safe_dir = _get_safe_path(default_path, directory)
+            files = os.listdir(safe_dir)
+            return str(files)
+        except Exception as e:
+            return f"Error: {str(e)}"
 
+    @staticmethod
     def see_file(filename: Annotated[str, "Name and path of file to check."]) -> str:
-        """
-        Check the contents of a chosen file.
-        """
-        if not is_safe_path(default_path, filename):
-            return "Error: Path traversal detected. You can only access files within the 'coding/' directory."
-        with open(default_path + filename, "r") as file:
-            lines = file.readlines()
-        formatted_lines = [f"{i+1}:{line}" for i, line in enumerate(lines)]
-        file_contents = "".join(formatted_lines)
+        """Comprueba el contenido de un archivo con numeración de líneas."""
+        try:
+            safe_file_path = _get_safe_path(default_path, filename)
+            with open(safe_file_path, "r", encoding="utf-8") as file:
+                lines = file.readlines()
+            formatted_lines = [f"{i+1}:{line}" for i, line in enumerate(lines)]
+            return "".join(formatted_lines)
+        except Exception as e:
+            return f"Error: {str(e)}"
 
-        return file_contents
-
+    @staticmethod
     def modify_code(
         filename: Annotated[str, "Name and path of file to change."],
-        start_line: Annotated[int, "Start line number to replace with new code."],
-        end_line: Annotated[int, "End line number to replace with new code."],
-        new_code: Annotated[
-            str,
-            "New piece of code to replace old code with. Remember about providing indents.",
-        ],
+        start_line: Annotated[int, "Start line number to replace."],
+        end_line: Annotated[int, "End line number to replace."],
+        new_code: Annotated[str, "New code with proper indentation."],
     ) -> str:
-        """
-        Replace old piece of code with new one. Proper indentation is important.
-        """
-        if not is_safe_path(default_path, filename):
-            return "Error: Path traversal detected. You can only access files within the 'coding/' directory."
-        with open(default_path + filename, "r+") as file:
-            file_contents = file.readlines()
-            file_contents[start_line - 1 : end_line] = [new_code + "\n"]
-            file.seek(0)
-            file.truncate()
-            file.write("".join(file_contents))
-        return "Code modified"
+        """Reemplaza un bloque de código por uno nuevo."""
+        try:
+            safe_file_path = _get_safe_path(default_path, filename)
+            with open(safe_file_path, "r+", encoding="utf-8") as file:
+                file_contents = file.readlines()
+                # El slice en Python es exclusivo al final, ajustamos para coincidir con numeración humana
+                file_contents[start_line - 1 : end_line] = [new_code + "\n"]
+                file.seek(0)
+                file.truncate()
+                file.write("".join(file_contents))
+            return "Code modified successfully"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
+    @staticmethod
     def create_file_with_code(
         filename: Annotated[str, "Name and path of file to create."],
         code: Annotated[str, "Code to write in the file."],
     ) -> str:
-        """
-        Create a new file with provided code.
-        """
-        if not is_safe_path(default_path, filename):
-            return "Error: Path traversal detected. You can only access files within the 'coding/' directory."
-        directory = os.path.dirname(default_path + filename)
-        os.makedirs(directory, exist_ok=True)
-        with open(default_path + filename, "w") as file:
-            file.write(code)
-        return "File created successfully"
+        """Crea un nuevo archivo con el código proporcionado."""
+        try:
+            safe_file_path = _get_safe_path(default_path, filename)
+            directory = safe_file_path.parent
+            directory.mkdir(parents=True, exist_ok=True)
+            
+            with open(safe_file_path, "w", encoding="utf-8") as file:
+                file.write(code)
+            return "File created successfully"
+        except Exception as e:
+            return f"Error: {str(e)}"

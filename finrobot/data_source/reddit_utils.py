@@ -10,14 +10,13 @@ from ..utils import decorate_all_methods, save_output, SavePathType
 def init_reddit_client(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        global reddit_client
         if not all(
             [os.environ.get("REDDIT_CLIENT_ID"), os.environ.get("REDDIT_CLIENT_SECRET")]
         ):
             print("Please set the environment variables for Reddit API credentials.")
             return None
         else:
-            reddit_client = praw.Reddit(
+            RedditUtils._client = praw.Reddit(
                 client_id=os.environ["REDDIT_CLIENT_ID"],
                 client_secret=os.environ["REDDIT_CLIENT_SECRET"],
                 user_agent="python:finrobot:v0.1 (by /u/finrobot)",
@@ -30,6 +29,7 @@ def init_reddit_client(func):
 
 @decorate_all_methods(init_reddit_client)
 class RedditUtils:
+    _client = None
 
     def get_reddit_posts(
         query: Annotated[
@@ -65,7 +65,7 @@ class RedditUtils:
 
         for subreddit_name in ["wallstreetbets", "stocks", "investing"]:
             print("Searching in subreddit:", subreddit_name)
-            subreddit = reddit_client.subreddit(subreddit_name)
+            subreddit = RedditUtils._client.subreddit(subreddit_name)
             posts = subreddit.search(query, limit=limit)
 
             for post in posts:
