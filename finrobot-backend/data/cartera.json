@@ -1,0 +1,79 @@
+[
+    {
+        "symbol": "AI.MC",
+        "name": "Airtificial Intelligence Structures SA",
+        "shares": 2081,
+        "finrobot_rating": "CHECKING",
+        "last_analysis_date": "N/A"
+    },
+    {
+        "symbol": "DIA.MC",
+        "name": "Distribuidora Internacional de Alimentación SA",
+        "shares": 11,
+        "finrobot_rating": "CHECKING",
+        "last_analysis_date": "N/A"
+    },
+    {
+        "symbol": "GRF.MC",
+        "name": "Grifols SA Class A",
+        "shares": 20,
+        "finrobot_rating": "CHECKING",
+        "last_analysis_date": "N/A"
+    },
+    {
+        "symbol": "IBE.MC",
+        "name": "Iberdrola",
+        "shares": 104,
+        "finrobot_rating": "CHECKING",
+        "last_analysis_date": "N/A"
+    },
+    {
+        "symbol": "IAG.MC",
+        "name": "International Consolidated Airlines Group SA",
+        "shares": 200,
+        "finrobot_rating": "CHECKING",
+        "last_analysis_date": "N/A"
+    },
+    {
+        "symbol": "LOG.MC",
+        "name": "Logista Integral SA",
+        "shares": 38,
+        "finrobot_rating": "BUY",
+        "last_analysis_date": "2026-03-01"
+    },
+    {
+        "symbol": "MAP.MC",
+        "name": "Mapfre SA",
+        "shares": 320,
+        "finrobot_rating": "CHECKING",
+        "last_analysis_date": "N/A"
+    },
+    {
+        "symbol": "MVC.MC",
+        "name": "Metrovacesa SA",
+        "shares": 171,
+        "finrobot_rating": "CHECKING",
+        "last_analysis_date": "N/A"
+    },
+    {
+        "symbol": "RED.MC",
+        "name": "Redeia Corporación SA",
+        "shares": 12,
+        "finrobot_rating": "CHECKING",
+        "last_analysis_date": "N/A"
+    },
+    {
+        "symbol": "REP.MC",
+        "name": "Repsol SA",
+        "shares": 90,
+        "finrobot_rating": "CHECKING",
+        "last_analysis_date": "N/A"
+    },
+    {
+        "symbol": "TEF.MC",
+        "name": "Telefónica SA",
+        "shares": 200,
+        "finrobot_rating": "CHECKING",
+        "last_analysis_date": "N/A"
+    }
+]

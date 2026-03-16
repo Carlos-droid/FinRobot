@@ -14,14 +14,13 @@ PDF_GENERATOR_API = "https://api.sec-api.io/filing-reader"
 def init_sec_api(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        global extractor_api, query_api, render_api
         if os.environ.get("SEC_API_KEY") is None:
             print("Please set the environment variable SEC_API_KEY to use sec_api.")
             return None
         else:
-            extractor_api = ExtractorApi(os.environ["SEC_API_KEY"])
-            query_api = QueryApi(os.environ["SEC_API_KEY"])
-            render_api = RenderApi(os.environ["SEC_API_KEY"])
+            SECUtils._extractor_api = ExtractorApi(os.environ["SEC_API_KEY"])
+            SECUtils._query_api = QueryApi(os.environ["SEC_API_KEY"])
+            SECUtils._render_api = RenderApi(os.environ["SEC_API_KEY"])
             print("Sec Api initialized")
             return func(*args, **kwargs)
 
@@ -30,6 +29,9 @@ def init_sec_api(func):
 
 @decorate_all_methods(init_sec_api)
 class SECUtils:
+    _extractor_api = None
+    _query_api = None
+    _render_api = None
 
     def get_10k_metadata(
         ticker: Annotated[str, "ticker symbol"],
@@ -49,7 +51,7 @@ class SECUtils:
             "size": 10,
             "sort": [{"filedAt": {"order": "desc"}}],
         }
-        response = query_api.get_filings(query)
+        response = SECUtils._query_api.get_filings(query)
         if response["filings"]:
             return response["filings"][0]
         return None
@@ -79,12 +81,12 @@ class SECUtils:
                 if not os.path.isdir(save_folder):
                     os.makedirs(save_folder)
 
-                file_content = render_api.get_filing(url)
+                file_content = SECUtils._render_api.get_filing(url)
                 file_path = os.path.join(save_folder, file_name)
                 with open(file_path, "w") as f:
                     f.write(file_content)
                 return f"{ticker}: download succeeded. Saved to {file_path}"
-            except:
+            except Exception as e:
                 return f"❌ {ticker}: downloaded failed: {url}"
         else:
             return f"No 2023 10-K filing found for {ticker}"
@@ -165,14 +167,6 @@ class SECUtils:
                 "Section must be in [1, 1A, 1B, 2, 3, 4, 5, 6, 7, 7A, 8, 9, 9A, 9B, 10, 11, 12, 13, 14, 15]"
             )
 
-        # os.makedirs(f"{self.project_dir}/10k", exist_ok=True)
-
-        # report_name = f"{self.project_dir}/10k/section_{section}.txt"
-
-        # if USE_CACHE and os.path.exists(report_name):
-        #     with open(report_name, "r") as f:
-        #         section_text = f.read()
-        # else:
         if report_address is None:
             report_address = FMPUtils.get_sec_report(ticker_symbol, fyear)
             if report_address.startswith("Link: "):
@@ -187,7 +181,7 @@ class SECUtils:
             with open(cache_path, "r") as f:
                 section_text = f.read()
         else:
-            section_text = extractor_api.get_section(report_address, section, "text")
+            section_text = SECUtils._extractor_api.get_section(report_address, section, "text")
             os.makedirs(os.path.dirname(cache_path), exist_ok=True)
             with open(cache_path, "w") as f:
                 f.write(section_text)

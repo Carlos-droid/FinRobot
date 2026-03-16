@@ -1,0 +1,29 @@
+[
+    {
+        "symbol": "BBVA.MC",
+        "name": "BBVA",
+        "target_price_buy": 9.00,
+        "current_price": 9.25,
+        "alert_triggered": false,
+        "finrobot_rating": "STRONG BUY",
+        "last_analysis_date": "2026-03-02"
+    },
+    {
+        "symbol": "ITX.MC",
+        "name": "Inditex",
+        "target_price_buy": 38.00,
+        "current_price": 40.50,
+        "alert_triggered": false,
+        "finrobot_rating": "HOLD",
+        "last_analysis_date": "2026-02-25"
+    },
+    {
+        "symbol": "IBE.MC",
+        "name": "Iberdrola",
+        "target_price_buy": 10.50,
+        "current_price": 10.40,
+        "alert_triggered": true,
+        "finrobot_rating": "BUY",
+        "last_analysis_date": "2026-03-01"
+    }
+]

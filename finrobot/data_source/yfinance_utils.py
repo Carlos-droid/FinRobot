@@ -3,7 +3,7 @@ from typing import Annotated, Callable, Any, Optional
 from pandas import DataFrame
 from functools import wraps
 
-from ..utils import save_output, SavePathType, decorate_all_methods
+from ..utils import save_output, SavePathType, decorate_all_methods, persistent_cache
 
 
 def init_ticker(func: Callable) -> Callable:
@@ -20,17 +20,23 @@ def init_ticker(func: Callable) -> Callable:
 @decorate_all_methods(init_ticker)
 class YFinanceUtils:
 
+    @persistent_cache
     def get_stock_data(
         symbol: Annotated[str, "ticker symbol"],
         start_date: Annotated[
-            str, "start date for retrieving stock price data, YYYY-mm-dd"
-        ],
+            str, "MANDATORY. Start date in YYYY-mm-dd format. DO NOT use 'from' or 'since'."
+        ] = None,
         end_date: Annotated[
-            str, "end date for retrieving stock price data, YYYY-mm-dd"
-        ],
+            str, "MANDATORY. End date in YYYY-mm-dd format. DO NOT use 'to'."
+        ] = None,
         save_path: SavePathType = None,
     ) -> DataFrame:
-        """retrieve stock price data for designated ticker symbol"""
+        """
+        Retrieve historical stock price data.
+        IMPORTANT FOR LLMs: 
+        - You MUST use EXACTLY the parameter names 'start_date' and 'end_date'.
+        - You MUST NOT use 'from' or 'to' as parameter names.
+        """
         ticker = symbol
         stock_data = ticker.history(start=start_date, end=end_date)
         save_output(stock_data, f"Stock data for {ticker.ticker}", save_path)

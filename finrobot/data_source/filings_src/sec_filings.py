@@ -1,23 +1,7 @@
-from typing import List
+from typing import List, Union, Optional
 import asyncio
 import aiohttp
 from collections import defaultdict
-from finrobot.data_source.filings_src.prepline_sec_filings.sections import (
-    section_string_to_enum,
-    validate_section_names,
-    SECSection,
-)
-from finrobot.data_source.filings_src.prepline_sec_filings.sec_document import (
-    SECDocument,
-    REPORT_TYPES,
-    VALID_FILING_TYPES,
-)
-
-from finrobot.data_source.filings_src.prepline_sec_filings.fetch import (
-    get_form_by_ticker,
-    open_form_by_ticker,
-    get_filing,
-)
 import concurrent.futures
 import time
 from datetime import date
@@ -25,17 +9,32 @@ from enum import Enum
 import re
 import signal
 import requests
-from typing import Union, Optional
-from ratelimit import limits, sleep_and_retry
 import os
+import json
+
+from ratelimit import limits, sleep_and_retry
 from unstructured.staging.base import convert_to_isd
+
 from finrobot.data_source.filings_src.prepline_sec_filings.sections import (
+    section_string_to_enum,
+    validate_section_names,
+    SECSection,
     ALL_SECTIONS,
     SECTIONS_10K,
     SECTIONS_10Q,
     SECTIONS_S1,
 )
-import json
+from finrobot.data_source.filings_src.prepline_sec_filings.sec_document import (
+    SECDocument,
+    REPORT_TYPES,
+    VALID_FILING_TYPES,
+)
+from finrobot.data_source.filings_src.prepline_sec_filings.fetch import (
+    get_form_by_ticker,
+    open_form_by_ticker,
+    get_filing,
+)
+
 
 DATE_FORMAT_TOKENS = "%Y-%m-%d"
 DEFAULT_BEFORE_DATE = date.today().strftime(DATE_FORMAT_TOKENS)
@@ -111,13 +110,16 @@ class SECExtractor:
             str: year for 10-K and year,month for 10-Q
         """
         details = filing_details.split("/")[-1]
-        if self.filing_type == "10-K":
-            matches = re.findall("20\d{2}", details)
-        elif self.filing_type == "10-Q":
-            matches = re.findall("20\d{4}", details)
+        matches = []
+        filing_type = getattr(self, "filing_type", None)
+        
+        if filing_type == "10-K":
+            matches = re.findall(r"20\d{2}", details)
+        elif filing_type == "10-Q":
+            matches = re.findall(r"20\d{4}", details)
 
         if matches:
-            return matches[-1]  # Return the first match
+            return matches[0]  # Return the first match (Bug fixed!)
         else:
             return None  # In case no match is found
 
@@ -129,23 +131,23 @@ class SECExtractor:
             all_narratives (dict): dictionary of section names and text
 
         Returns:
-            _type_: _description_
+            str: all joined texts for the section
         """
         all_texts = []
-        for text_dict in all_narratives[section]:
-            for key, val in text_dict.items():
-                if key == "text":
-                    all_texts.append(val)
+        # Safely get the section, defaulting to an empty list to avoid KeyError
+        for text_dict in all_narratives.get(section, []):
+            if "text" in text_dict:
+                all_texts.append(text_dict["text"])
         return " ".join(all_texts)
 
     def get_section_texts_from_text(self, text):
         """Get the text from filing document URL
 
         Args:
-            url (str): url link
+            text (str): file text
 
         Returns:
-            _type_: all texts of sections and filing type of the document
+            dict: all texts of sections
         """
         all_narratives, filing_type = self.pipeline_api(text, m_section=self.sections)
         all_narrative_dict = dict.fromkeys(all_narratives.keys())
@@ -153,11 +155,10 @@ class SECExtractor:
         for section in all_narratives:
             all_narrative_dict[section] = self.get_all_text(section, all_narratives)
 
-        # return all_narrative_dict, filing_type
         return all_narrative_dict
 
     def pipeline_api(self, text, m_section=[], m_section_regex=[]):
-        """Unsturcured API to get the text
+        """Unstructured API to get the text
 
         Args:
             text (str): Text from the filing document URL
@@ -169,7 +170,7 @@ class SECExtractor:
             ValueError: Invalid section names
 
         Returns:
-                section and correspoding texts
+            tuple: section and corresponding texts, filing type
         """
         validate_section_names(m_section)
 
@@ -189,9 +190,9 @@ class SECExtractor:
                     m_section = [enum.name for enum in SECTIONS_10Q]
                 else:
                     raise ValueError(f"Invalid report type: {filing_type}")
-
             else:
                 m_section = [enum.name for enum in SECTIONS_S1]
+                
         for section in m_section:
             results[section] = sec_document.get_section_narrative(
                 section_string_to_enum[section]
@@ -202,6 +203,7 @@ class SECExtractor:
             with timeout(seconds=5):
                 section_elements = sec_document.get_section_narrative(regex_num)
                 results[f"REGEX_{i}"] = section_elements
+                
         return {
             section: convert_to_isd(section_narrative)
             for section, section_narrative in results.items()
@@ -217,6 +219,8 @@ class SECExtractor:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
+        # Note: headers dict above is created but not passed to session.get(). 
+        # The _get_session handles headers, so we leave this as is.
         response = session.get(url)
         response.raise_for_status()
         return response.text
