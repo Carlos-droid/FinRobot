@@ -1,0 +1,21 @@
+[Unit]
+Description=FinRobot DLQ Worker
+After=network-online.target redis.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ia
+Group=ia
+WorkingDirectory=/home/ia/FinRobot
+EnvironmentFile=/home/ia/FinRobot/.env
+ExecStart=/home/ia/FinRobot/.venv/bin/python -m finrobot.infrastructure.dlq_worker
+Restart=on-failure
+RestartSec=30
+MemoryMax=1G
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=finrobot-dlq
+
+[Install]
+WantedBy=multi-user.target

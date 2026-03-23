@@ -1,0 +1,14 @@
+[Unit]
+Description=FinRobot AutoResearch Nightly Task
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=ia
+Group=ia
+WorkingDirectory=/home/ia/FinRobot
+EnvironmentFile=/home/ia/FinRobot/.env
+ExecStart=/home/ia/FinRobot/.venv/bin/python -m finrobot.autoresearch.unified_loop
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=finrobot-research

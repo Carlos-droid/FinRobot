@@ -1,0 +1,57 @@
+# FinRobot Docker — Core Dependencies
+# Subset mínimo necesario para ejecutar agentes con Ollama/NIM
+# Para las dependencias completas (incluyendo marker-pdf, unstructured),
+# instalar desde requirements.txt directamente.
+
+# Core: AutoGen agent framework
+# NOTA: pyautogen 0.4+ renombró el import, FinRobot usa 'import autogen'
+pyautogen>=0.2.19,<0.4.0
+pyautogen[retrievechat]>=0.2.19,<0.4.0
+
+# LLM providers
+python-dotenv>=1.0.0
+openai>=1.0.0
+
+# Utilidades
+ipython
+matplotlib
+numpy
+pandas
+tqdm>=4.66.1
+requests>=2.31.0
+tenacity>=8.3.0
+typing_extensions>=4.9.0
+wrapt>=1.14.0
+
+# Financial data
+finnhub-python
+yfinance
+mplfinance
+backtrader
+praw
+edgartools
+tushare
+pandas_datareader
+pdfkit>=1.0.0
+
+# Data handling
+pyPDF2
+reportlab
+
+# NLP
+langchain>=0.1.20
+nltk>=3.8.1
+scikit_learn>=1.5.0
+
+# Packaging
+setuptools>=41.4.0
+wheel>=0.33.6
+
+# HTTP
+aiohttp>=3.9.0
+
+# Rate limiting
+ratelimit>=2.2.1
+
+# HuggingFace (for embeddings)
+huggingface_hub

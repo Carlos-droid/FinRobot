@@ -1,0 +1,24 @@
+[Unit]
+Description=FinRobot Trading Daemon
+After=network-online.target redis.service postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ia
+Group=ia
+WorkingDirectory=/home/ia/FinRobot
+EnvironmentFile=/home/ia/FinRobot/.env
+# Pre-run checks (e.g., verifying Redis/Ollama/DB)
+ExecStartPre=/home/ia/FinRobot/.venv/bin/python -m finrobot.infrastructure.preflight
+ExecStart=/home/ia/FinRobot/.venv/bin/python -m finrobot.infrastructure.daemon
+Restart=on-failure
+RestartSec=30
+MemoryMax=6G
+CPUQuota=80%
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=finrobot
+
+[Install]
+WantedBy=multi-user.target

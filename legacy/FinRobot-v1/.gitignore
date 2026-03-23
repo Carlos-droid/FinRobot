@@ -1,0 +1,42 @@
+# SEGURIDAD Y PRIVACIDAD (ESTRICTO)
+# Archivos de entorno y claves
+.env
+.env.local
+.env.*
+config.json
+secrets.json
+OAI_CONFIG_LIST
+PERSONAL_KEYS
+config_api_keys
+
+# Bases de datos y carpetas de datos
+*.db
+*.sqlite
+*.sql
+data/
+db/
+finrobot-backend/data/
+**/__pycache__/
+
+# Datos financieros y reportes locales
+cartera/
+portfolio.*
+stocks.json
+reporte_*.md
+*.log
+venv
+
+# Herramientas, IDE y Repos Embebidos
+.agents/
+.cursor/
+.vscode/
+mcp-config.json
+tools/
+FinRobot
+backends-for-openbb
+OpenBB
+openbb-ai
+OpenBB@
+openbb-ai@
+agents-for-openbb@
+venv@

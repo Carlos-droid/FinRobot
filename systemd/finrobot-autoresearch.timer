@@ -1,0 +1,10 @@
+[Unit]
+Description=FinRobot AutoResearch Nightly Timer
+
+[Timer]
+# Monday to Friday at 23:00 UTC
+OnCalendar=Mon..Fri 23:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target
