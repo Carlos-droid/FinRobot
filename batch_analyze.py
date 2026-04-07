@@ -1,11 +1,13 @@
 import json
 import os
 import time
+import argparse
+from datetime import datetime, timedelta
 from finrobot_engine import run_finrobot_analysis
 
 CARTERA_PATH = "/home/ia/FinRobot-master/finrobot-backend/data/cartera.json"
 
-def batch_process():
+def batch_process(skip_recent=True):
     if not os.path.exists(CARTERA_PATH):
         print(f"Error: No se encuentra {CARTERA_PATH}")
         return
@@ -15,12 +17,23 @@ def batch_process():
 
     print(f"=== Iniciando Procesamiento por Lotes de {len(cartera)} activos ===")
 
+    now = datetime.now()
+
     for asset in cartera:
         symbol = asset["symbol"]
         name = asset["name"]
         
-        # Saltamos si ya tiene análisis reciente (opcional, pero para el usuario lo haremos todo)
-        # if asset.get("last_analysis_date") != "N/A": continue
+        if skip_recent:
+            last_date_str = asset.get("last_analysis_date")
+            if last_date_str and last_date_str != "N/A":
+                try:
+                    last_date = datetime.strptime(last_date_str, "%Y-%m-%d")
+                    if (now - last_date).days <= 7:
+                        print(f"[INFO] Skipping {symbol} - already analyzed on {last_date_str}")
+                        continue
+                except ValueError:
+                    # Si hay un error de formato, ignoramos la verificación y procedemos
+                    pass
 
         try:
             _, report_summary = run_finrobot_analysis(symbol, name)
@@ -43,4 +56,8 @@ def batch_process():
     print("=== Procesamiento Finalizado con Éxito ===")
 
 if __name__ == "__main__":
-    batch_process()
+    parser = argparse.ArgumentParser(description="Batch analyze assets in cartera.")
+    parser.add_argument("--force", action="store_true", help="Force analysis of all assets, ignoring recent ones.")
+    args = parser.parse_args()
+
+    batch_process(skip_recent=not args.force)
