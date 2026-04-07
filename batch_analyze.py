@@ -2,12 +2,13 @@ import argparse
 import json
 import os
 import time
+from datetime import datetime, timedelta
 from finrobot_engine import run_finrobot_analysis
 from finrobot.utils import get_current_date
 
 CARTERA_PATH = "/home/ia/FinRobot-master/finrobot-backend/data/cartera.json"
 
-def batch_process(force_reanalyze=False):
+def batch_process(skip_recent=True):
     if not os.path.exists(CARTERA_PATH):
         print(f"Error: No se encuentra {CARTERA_PATH}")
         return
@@ -17,17 +18,23 @@ def batch_process(force_reanalyze=False):
 
     print(f"=== Iniciando Procesamiento por Lotes de {len(cartera)} activos ===")
 
-    current_date = get_current_date()
+    now = datetime.now()
 
     for asset in cartera:
         symbol = asset["symbol"]
         name = asset["name"]
         
-        # Saltamos si ya tiene análisis reciente (hoy) y no forzamos reanálisis
-        last_date = asset.get("last_analysis_date")
-        if not force_reanalyze and last_date == current_date:
-            print(f"Saltando {symbol} - Análisis ya realizado hoy ({last_date})")
-            continue
+        if skip_recent:
+            last_date_str = asset.get("last_analysis_date")
+            if last_date_str and last_date_str != "N/A":
+                try:
+                    last_date = datetime.strptime(last_date_str, "%Y-%m-%d")
+                    if (now - last_date).days <= 7:
+                        print(f"[INFO] Skipping {symbol} - already analyzed on {last_date_str}")
+                        continue
+                except ValueError:
+                    # Si hay un error de formato, ignoramos la verificación y procedemos
+                    pass
 
         try:
             _, report_summary = run_finrobot_analysis(symbol, name)
@@ -54,8 +61,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Forzar el reanálisis de todos los activos, ignorando si ya fueron analizados hoy."
+        help="Forzar el reanálisis de todos los activos, ignorando si ya fueron analizados recientemente."
     )
     args = parser.parse_args()
 
-    batch_process(force_reanalyze=args.force)
+    batch_process(skip_recent=not args.force)
