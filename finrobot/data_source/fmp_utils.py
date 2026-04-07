@@ -207,44 +207,67 @@ class FMPUtils:
         all_data = {}
 
         symbols = [ticker_symbol] + competitors  # Combine company and competitors into one list
-    
-        for symbol in symbols:
-            income_statement_url = f"{base_url}/income-statement/{symbol}?limit={years}"
-            ratios_url = f"{base_url}/ratios/{symbol}?limit={years}"
-            key_metrics_url = f"{base_url}/key-metrics/{symbol}?limit={years}"
 
-            # ⚡ Bolt Optimization: Fetch data once per symbol instead of fetching for each year.
-            # (In this function it's already properly hoisted out of the years loop, but let's
-            # ensure no similar issue in this block. Looks like it's already correct here.)
-            income_data = requests.get(income_statement_url, params={"apikey": FMPUtils._api_key}).json()
-            ratios_data = requests.get(ratios_url, params={"apikey": FMPUtils._api_key}).json()
-            key_metrics_data = requests.get(key_metrics_url, params={"apikey": FMPUtils._api_key}).json()
+        def fetch_symbol_metrics(symbol):
+            try:
+                income_statement_url = f"{base_url}/income-statement/{symbol}?limit={years}"
+                ratios_url = f"{base_url}/ratios/{symbol}?limit={years}"
+                key_metrics_url = f"{base_url}/key-metrics/{symbol}?limit={years}"
 
-            metrics = {}
+                # Fetch data once per symbol
+                income_resp = requests.get(income_statement_url, params={"apikey": FMPUtils._api_key})
+                income_resp.raise_for_status()
+                income_data = income_resp.json()
 
-            if income_data and ratios_data and key_metrics_data:
-                for year_offset in range(years):
-                    metrics[year_offset] = {
-                        "Revenue": round(income_data[year_offset]["revenue"] / 1e6),
-                        "Revenue Growth": (
-                            "{}%".format(round(((income_data[year_offset]["revenue"] - income_data[year_offset - 1]["revenue"]) / income_data[year_offset - 1]["revenue"]) * 100, 1))
-                            if year_offset > 0 else None
-                        ),
-                        "Gross Margin": round((income_data[year_offset]["grossProfit"] / income_data[year_offset]["revenue"]),2),
-                        "EBITDA Margin": round((income_data[year_offset]["ebitdaratio"]),2),
-                        "FCF Conversion": round((
-                            key_metrics_data[year_offset]["enterpriseValue"] 
-                            / key_metrics_data[year_offset]["evToOperatingCashFlow"] 
-                            / income_data[year_offset]["netIncome"]
-                            if key_metrics_data[year_offset]["evToOperatingCashFlow"] != 0 else None
-                        ),2),
-                        "ROIC":"{}%".format(round((key_metrics_data[year_offset]["roic"])*100,1)),
-                        "EV/EBITDA": round((key_metrics_data[year_offset]["enterpriseValueOverEBITDA"]),2),
-                    }
+                ratios_resp = requests.get(ratios_url, params={"apikey": FMPUtils._api_key})
+                ratios_resp.raise_for_status()
+                ratios_data = ratios_resp.json()
 
-            df = pd.DataFrame.from_dict(metrics, orient='index')
-            df = df.sort_index(axis=1)
-            all_data[symbol] = df
+                key_metrics_resp = requests.get(key_metrics_url, params={"apikey": FMPUtils._api_key})
+                key_metrics_resp.raise_for_status()
+                key_metrics_data = key_metrics_resp.json()
+
+                metrics = {}
+
+                if income_data and ratios_data and key_metrics_data:
+                    for year_offset in range(years):
+                        metrics[year_offset] = {
+                            "Revenue": round(income_data[year_offset]["revenue"] / 1e6),
+                            "Revenue Growth": (
+                                "{}%".format(round(((income_data[year_offset]["revenue"] - income_data[year_offset - 1]["revenue"]) / income_data[year_offset - 1]["revenue"]) * 100, 1))
+                                if year_offset > 0 else None
+                            ),
+                            "Gross Margin": round((income_data[year_offset]["grossProfit"] / income_data[year_offset]["revenue"]),2),
+                            "EBITDA Margin": round((income_data[year_offset]["ebitdaratio"]),2),
+                            "FCF Conversion": round((
+                                key_metrics_data[year_offset]["enterpriseValue"]
+                                / key_metrics_data[year_offset]["evToOperatingCashFlow"]
+                                / income_data[year_offset]["netIncome"]
+                                if key_metrics_data[year_offset]["evToOperatingCashFlow"] != 0 else None
+                            ),2),
+                            "ROIC":"{}%".format(round((key_metrics_data[year_offset]["roic"])*100,1)),
+                            "EV/EBITDA": round((key_metrics_data[year_offset]["enterpriseValueOverEBITDA"]),2),
+                        }
+
+                df = pd.DataFrame.from_dict(metrics, orient='index')
+                df = df.sort_index(axis=1)
+                return symbol, df
+            except Exception as e:
+                print(f"Warning: Failed to fetch data for {symbol}: {e}")
+                return symbol, None
+
+        import concurrent.futures
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_symbol = {executor.submit(fetch_symbol_metrics, symbol): symbol for symbol in symbols}
+            for future in concurrent.futures.as_completed(future_to_symbol):
+                symbol = future_to_symbol[future]
+                try:
+                    res_symbol, df = future.result()
+                    if df is not None:
+                        all_data[res_symbol] = df
+                except Exception as exc:
+                    print(f"Warning: {symbol} generated an exception: {exc}")
 
         return all_data
 
