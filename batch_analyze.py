@@ -1,11 +1,13 @@
+import argparse
 import json
 import os
 import time
 from finrobot_engine import run_finrobot_analysis
+from finrobot.utils import get_current_date
 
 CARTERA_PATH = "/home/ia/FinRobot-master/finrobot-backend/data/cartera.json"
 
-def batch_process():
+def batch_process(force_reanalyze=False):
     if not os.path.exists(CARTERA_PATH):
         print(f"Error: No se encuentra {CARTERA_PATH}")
         return
@@ -15,12 +17,17 @@ def batch_process():
 
     print(f"=== Iniciando Procesamiento por Lotes de {len(cartera)} activos ===")
 
+    current_date = get_current_date()
+
     for asset in cartera:
         symbol = asset["symbol"]
         name = asset["name"]
         
-        # Saltamos si ya tiene análisis reciente (opcional, pero para el usuario lo haremos todo)
-        # if asset.get("last_analysis_date") != "N/A": continue
+        # Saltamos si ya tiene análisis reciente (hoy) y no forzamos reanálisis
+        last_date = asset.get("last_analysis_date")
+        if not force_reanalyze and last_date == current_date:
+            print(f"Saltando {symbol} - Análisis ya realizado hoy ({last_date})")
+            continue
 
         try:
             _, report_summary = run_finrobot_analysis(symbol, name)
@@ -43,4 +50,12 @@ def batch_process():
     print("=== Procesamiento Finalizado con Éxito ===")
 
 if __name__ == "__main__":
-    batch_process()
+    parser = argparse.ArgumentParser(description="Procesamiento por lotes de activos financieros.")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Forzar el reanálisis de todos los activos, ignorando si ya fueron analizados hoy."
+    )
+    args = parser.parse_args()
+
+    batch_process(force_reanalyze=args.force)
