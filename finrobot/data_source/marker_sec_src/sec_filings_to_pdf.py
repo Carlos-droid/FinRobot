@@ -7,6 +7,11 @@ import requests
 import pdfkit
 import os
 import json
+import concurrent.futures
+import logging
+
+# Configure logging for thread-safe warnings
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 SEC_SEARCH_URL: Final[str] = "http://www.sec.gov/cgi-bin/browse-edgar"
 
@@ -121,13 +126,33 @@ def sec_save_pdfs(
 
 def _convert_html_to_pdfs(html_urls, base_path: str):
     metadata_json = {}
-    for html_url in html_urls:
+    options = {
+        'custom-header': [
+            ('User-Agent', 'Indiana-University-Bloomington athecolab@gmail.com')
+        ]
+    }
+
+    def process_url(html_url):
         pdf_path = html_url[0].split("/")[-1]
         # Add the filing type
         pdf_path = pdf_path.replace(".htm", f"-{html_url[1]}.pdf")
         # /A for amended is not a valid path
         pdf_path = pdf_path.replace("10-K/A", "10-KA")
-        metadata_json[pdf_path] = {"languages": ["English"]}
-        pdf_path = os.path.join(base_path, pdf_path)
-        pdfkit.from_url(html_url[0], pdf_path)
+        full_pdf_path = os.path.join(base_path, pdf_path)
+
+        try:
+            pdfkit.from_url(html_url[0], full_pdf_path, options=options)
+            return pdf_path
+        except Exception as e:
+            logging.warning(f"Failed to convert {html_url[0]} to PDF: {e}")
+            return None
+
+    # Use ThreadPoolExecutor to process URLs concurrently, up to 5 workers as requested
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [executor.submit(process_url, url) for url in html_urls]
+        for future in concurrent.futures.as_completed(futures):
+            pdf_path = future.result()
+            if pdf_path is not None:
+                metadata_json[pdf_path] = {"languages": ["English"]}
+
     return metadata_json
