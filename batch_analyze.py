@@ -1,9 +1,10 @@
+import argparse
 import json
 import os
 import time
-import argparse
 from datetime import datetime, timedelta
 from finrobot_engine import run_finrobot_analysis
+from finrobot.utils import get_current_date
 
 CARTERA_PATH = "/home/ia/FinRobot-master/finrobot-backend/data/cartera.json"
 
@@ -56,8 +57,12 @@ def batch_process(skip_recent=True):
     print("=== Procesamiento Finalizado con Éxito ===")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Batch analyze assets in cartera.")
-    parser.add_argument("--force", action="store_true", help="Force analysis of all assets, ignoring recent ones.")
+    parser = argparse.ArgumentParser(description="Procesamiento por lotes de activos financieros.")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Forzar el reanálisis de todos los activos, ignorando si ya fueron analizados recientemente."
+    )
     args = parser.parse_args()
 
     batch_process(skip_recent=not args.force)
