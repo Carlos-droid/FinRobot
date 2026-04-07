@@ -83,16 +83,15 @@ def rag_database_earnings_call(
                 speaker = doc.metadata['speaker']
                 speaker_text = doc.page_content
                 if speaker not in speaker_releavnt_dict:
-                    speaker_releavnt_dict[speaker] = speaker_text
+                    speaker_releavnt_dict[speaker] = [speaker_text]
                 else:
-                    speaker_releavnt_dict[speaker] += " "+speaker_text
+                    speaker_releavnt_dict[speaker].append(speaker_text)
 
-            relevant_speaker_text = ""
-            for speaker, text in speaker_releavnt_dict.items():
-                relevant_speaker_text += speaker + ": "
-                relevant_speaker_text += text + "\n\n"
+            speaker_releavnt_dict = {k: " ".join(v) for k, v in speaker_releavnt_dict.items()}
 
-            return relevant_speaker_text
+            return "".join(
+                f"{speaker}: {text}\n\n" for speaker, text in speaker_releavnt_dict.items()
+            )
 
         return query_database_earnings_call, earnings_call_quarter_vals, quarter_speaker_dict
 
@@ -144,15 +143,15 @@ def rag_database_sec(
                 section = doc.metadata['section_name']
                 section_text = doc.page_content
                 if section not in relevant_section_dict:
-                    relevant_section_dict[section] = section_text
+                    relevant_section_dict[section] = [section_text]
                 else:
-                    relevant_section_dict[section] += " "+section_text
+                    relevant_section_dict[section].append(section_text)
 
-            relevant_section_text = ""
-            for section, text in relevant_section_dict.items():
-                relevant_section_text += section + ": "
-                relevant_section_text += text + "\n\n"
-            return relevant_section_text
+            relevant_section_dict = {k: " ".join(v) for k, v in relevant_section_dict.items()}
+
+            return "".join(
+                f"{section}: {text}\n\n" for section, text in relevant_section_dict.items()
+            )
 
         return query_database_unstructured_sec, sec_form_names
     
@@ -210,9 +209,5 @@ def rag_database_sec(
             }
             )
    
-            relevant_section_text = ""
-            for relevant_text in relevant_docs:
-                relevant_section_text += relevant_text.page_content + "\n\n"
-
-            return relevant_section_text
+            return "".join(f"{relevant_text.page_content}\n\n" for relevant_text in relevant_docs)
         return query_database_markdown_sec, sec_form_names
