@@ -31,8 +31,8 @@ ALLOWED_ORIGINS = os.getenv(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Accept"],
 )
 
 class GenericResponse(BaseModel):
@@ -244,7 +244,7 @@ def run_finrobot_bg(ticker: str, model: str):
             VENV_PYTHON, 
             ENGINE_SCRIPT, 
             ticker, ticker, model
-        ])
+        ], shell=False)
     except Exception as e:
         import logging
         logging.error(f"[FinRobot BG] Error: {e}")
@@ -266,6 +266,14 @@ def run_analyzer(request: Request, background_tasks: BackgroundTasks, data: str 
         if not ticker:
             return "⚠️ **Error**: Debes introducir un símbolo (ej. ITX.MC) en el widget anterior o configurar bien los parámetros."
         
+        # Security validation
+        if not re.match(r"^[a-zA-Z0-9.\-]{1,15}$", ticker):
+            raise HTTPException(status_code=400, detail="Invalid ticker format. Must be 1-15 characters and alphanumeric (dots and hyphens allowed).")
+        if model not in ["llama-3.1-8b", "local", "gpt-4"]:
+            raise HTTPException(status_code=400, detail="Invalid model selected. Allowed models: llama-3.1-8b, local, gpt-4.")
+
+        ticker = ticker.upper()
+
         background_tasks.add_task(run_finrobot_bg, ticker, model)
         return (
             f"## ✅ Análisis lanzado en Modo de Compatibilidad\n\n"
@@ -302,6 +310,14 @@ def run_analyzer(request: Request, background_tasks: BackgroundTasks, data: str 
             citable=False
         )
     
+    # Security validation
+    if not re.match(r"^[a-zA-Z0-9.\-]{1,15}$", ticker):
+        raise HTTPException(status_code=400, detail="Invalid ticker format. Must be 1-15 characters and alphanumeric (dots and hyphens allowed).")
+    if model not in ["llama-3.1-8b", "local", "gpt-4"]:
+        raise HTTPException(status_code=400, detail="Invalid model selected. Allowed models: llama-3.1-8b, local, gpt-4.")
+
+    ticker = ticker.upper()
+
     background_tasks.add_task(run_finrobot_bg, ticker, model)
     
     return OmniWidgetResponse(

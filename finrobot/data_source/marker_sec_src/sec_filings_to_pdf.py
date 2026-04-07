@@ -26,17 +26,7 @@ def get_cik_by_ticker(ticker: str) -> str:
     """Gets a CIK number from a stock ticker by running a search on the SEC website."""
     cik_re = re.compile(r".*CIK=(\d{10}).*")
     url = _search_url(ticker)
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
-    # headers =  {
-    # 'authority': 'www.google.com',
-    # 'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-    # 'accept-language': 'en-US,en;q=0.9',
-    # 'cache-control': 'max-age=0',
-    # 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
-    # # Add more headers as needed
-    # }
+    
     company = "Indiana-University-Bloomington"
     email = "athecolab@gmail.com"
     headers = {
@@ -44,8 +34,6 @@ def get_cik_by_ticker(ticker: str) -> str:
         "Content-Type": "text/html",
     }
     response = requests.get(url, stream=True, headers=headers)
-    # response = requests.get(url, headers=headers)
-    # response = requests.get(url)
     response.raise_for_status()
     results = cik_re.findall(response.text)
     return str(results[0])
@@ -75,7 +63,7 @@ def sec_save_pdfs(
 
     url = f"https://data.sec.gov/submissions/CIK{cik}.json"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": "Indiana-University-Bloomington athecolab@gmail.com"
     }
     # Send a GET request to the URL with headers
     response = requests.get(url, headers=headers)
@@ -83,7 +71,7 @@ def sec_save_pdfs(
     if response.status_code == 200:
         json_data = response.json()
     else:
-        print(f"Error: Unable to fetch data. Status code: {response.status_code}")
+        logging.error(f"Error: Unable to fetch data. Status code: {response.status_code}")
 
     form_lists = []
     filings = json_data["filings"]
@@ -105,6 +93,7 @@ def sec_save_pdfs(
             no_dashes_acc_num = re.sub("-", "", acc_num)
             form_lists.append([no_dashes_acc_num, form_name, filing_date, report_date])
             sec_form_names.append(form_name)
+    
     process_links = lambda x: "".join(x.split("-"))
 
     acc_nums_list = [[fl[0], fl[1], process_links(fl[-1])] for fl in form_lists]
@@ -121,7 +110,7 @@ def sec_save_pdfs(
     metadata_file_path = os.path.join(ticker_year_path,'metadata.json') 
     with open(metadata_file_path, 'w') as f:
         json.dump(metadata_json, f)
-    return html_urls, metadata_json, metadata_file_path,ticker_year_path
+    return html_urls, metadata_json, metadata_file_path, ticker_year_path
 
 
 def _convert_html_to_pdfs(html_urls, base_path: str):
@@ -133,26 +122,30 @@ def _convert_html_to_pdfs(html_urls, base_path: str):
     }
 
     def process_url(html_url):
-        pdf_path = html_url[0].split("/")[-1]
-        # Add the filing type
-        pdf_path = pdf_path.replace(".htm", f"-{html_url[1]}.pdf")
-        # /A for amended is not a valid path
-        pdf_path = pdf_path.replace("10-K/A", "10-KA")
-        full_pdf_path = os.path.join(base_path, pdf_path)
-
         try:
+            pdf_path = html_url[0].split("/")[-1]
+            # Add the filing type
+            pdf_path = pdf_path.replace(".htm", f"-{html_url[1]}.pdf")
+            # /A for amended is not a valid path
+            pdf_path = pdf_path.replace("10-K/A", "10-KA")
+            full_pdf_path = os.path.join(base_path, pdf_path)
+
             pdfkit.from_url(html_url[0], full_pdf_path, options=options)
-            return pdf_path
+            return pdf_path, {"languages": ["English"]}
         except Exception as e:
             logging.warning(f"Failed to convert {html_url[0]} to PDF: {e}")
-            return None
+            return None, None
 
     # Use ThreadPoolExecutor to process URLs concurrently, up to 5 workers as requested
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        futures = [executor.submit(process_url, url) for url in html_urls]
-        for future in concurrent.futures.as_completed(futures):
-            pdf_path = future.result()
-            if pdf_path is not None:
-                metadata_json[pdf_path] = {"languages": ["English"]}
+        future_to_url = {executor.submit(process_url, url): url for url in html_urls}
+        for future in concurrent.futures.as_completed(future_to_url):
+            try:
+                pdf_path, meta = future.result()
+                if pdf_path and meta:
+                    metadata_json[pdf_path] = meta
+            except Exception as exc:
+                url = future_to_url[future][0]
+                logging.error(f"{url} generated an exception during execution: {exc}")
 
     return metadata_json
