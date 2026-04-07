@@ -119,15 +119,44 @@ def sec_save_pdfs(
     return html_urls, metadata_json, metadata_file_path,ticker_year_path
 
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
 def _convert_html_to_pdfs(html_urls, base_path: str):
     metadata_json = {}
-    for html_url in html_urls:
-        pdf_path = html_url[0].split("/")[-1]
-        # Add the filing type
-        pdf_path = pdf_path.replace(".htm", f"-{html_url[1]}.pdf")
-        # /A for amended is not a valid path
-        pdf_path = pdf_path.replace("10-K/A", "10-KA")
-        metadata_json[pdf_path] = {"languages": ["English"]}
-        pdf_path = os.path.join(base_path, pdf_path)
-        pdfkit.from_url(html_url[0], pdf_path)
+
+    def process_url(html_url):
+        try:
+            pdf_path = html_url[0].split("/")[-1]
+            # Add the filing type
+            pdf_path = pdf_path.replace(".htm", f"-{html_url[1]}.pdf")
+            # /A for amended is not a valid path
+            pdf_path = pdf_path.replace("10-K/A", "10-KA")
+            full_pdf_path = os.path.join(base_path, pdf_path)
+
+            # Use specific SEC headers to avoid content access denied if possible,
+            # though it might still be blocked by SEC
+            options = {
+                "custom-header": [
+                    ("User-Agent", "Indiana-University-Bloomington athecolab@gmail.com")
+                ]
+            }
+            pdfkit.from_url(html_url[0], full_pdf_path, options=options)
+            return pdf_path, {"languages": ["English"]}
+        except Exception as e:
+            print(f"Error processing {html_url[0]}: {e}")
+            return None, None
+
+    # Using max_workers=5 to balance between speed and rate limits/memory
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_url = {executor.submit(process_url, url): url for url in html_urls}
+        for future in as_completed(future_to_url):
+            try:
+                pdf_path, meta = future.result()
+                if pdf_path and meta:
+                    metadata_json[pdf_path] = meta
+            except Exception as exc:
+                url = future_to_url[future]
+                print(f"{url} generated an exception: {exc}")
+
     return metadata_json
